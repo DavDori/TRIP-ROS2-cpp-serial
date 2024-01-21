@@ -1,0 +1,5 @@
+motor_max_rpm: 1500.0
+pulse_per_revolution: 1024.0
+sprocket_radius_m: 0.085
+track_distance_m: 0.62
+gearbox_ratio: 30.0
