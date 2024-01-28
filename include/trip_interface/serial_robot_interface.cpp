@@ -9,7 +9,7 @@ SerialRobotInterface::SerialRobotInterface(const std::string &port, speed_t baud
     {
         throw CANNOT_OPEN_PORT;
     }
-    fcntl(serial_handle_, F_SETFL, O_APPEND | O_NONBLOCK & ~FNDELAY);
+    // fcntl(serial_handle_, F_SETFL, O_APPEND | O_NONBLOCK & ~FNDELAY);
     initSerialPort();
 
 }
@@ -18,39 +18,45 @@ void SerialRobotInterface::initSerialPort()
 {
     if (!isConnected())
         throw DEVICE_NOT_CONNECTED;
-    struct termios newtio;
-    tcgetattr(serial_handle_, &newtio);
+    struct termios tty;
+    tcgetattr(serial_handle_, &tty);
 
+      // Read in existing settings, and handle any error
+    if(tcgetattr(serial_handle_, &tty) != 0) {
+        printf("Error %i from tcgetattr: %s\n", errno, stderr(errno));
+        throw DEVICE_NOT_CONNECTED;
+    }
+
+    tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
+    tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
+    tty.c_cflag &= ~CSIZE; // Clear all bits that set the data size 
+    tty.c_cflag |= CS8; // 8 bits per byte (most common)
+    tty.c_cflag &= ~CRTSCTS; // Disable RTS/CTS hardware flow control (most common)
+    tty.c_cflag |= CREAD | CLOCAL; // Turn on READ & ignore ctrl lines (CLOCAL = 1)
+
+    tty.c_lflag &= ~ICANON;
+    tty.c_lflag &= ~ECHO; // Disable echo
+    tty.c_lflag &= ~ECHOE; // Disable erasure
+    tty.c_lflag &= ~ECHONL; // Disable new-line echo
+    tty.c_lflag &= ~ISIG; // Disable interpretation of INTR, QUIT and SUSP
+    tty.c_iflag &= ~(IXON | IXOFF | IXANY); // Turn off s/w flow ctrl
+    tty.c_iflag &= ~(IGNBRK|BRKINT|PARMRK|ISTRIP|INLCR|IGNCR|ICRNL); // Disable any special handling of received bytes
+
+    tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
+    tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
+    // tty.c_oflag &= ~OXTABS; // Prevent conversion of tabs to spaces (NOT PRESENT ON LINUX)
+    // tty.c_oflag &= ~ONOEOT; // Prevent removal of C-d chars (0x004) in output (NOT PRESENT ON LINUX)
+
+    tty.c_cc[VTIME] = 1;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
+    tty.c_cc[VMIN] = 0;
     // Set the Tx and Rx Baud Rate to BOUDRATE
-    cfsetospeed(&newtio, (speed_t)baud_rate_);
-    cfsetispeed(&newtio, (speed_t)baud_rate_);
+    cfsetospeed(&tty, (speed_t)baud_rate_);
+    cfsetispeed(&tty, (speed_t)baud_rate_);
 
-    // Enable the Receiver and  Set local Mode
-    newtio.c_iflag = IGNBRK;            /* Ignore Break Condition & no processing under input options*/
-    newtio.c_lflag = 0;                 /* Select the RAW Input Mode through Local options*/
-    newtio.c_oflag = 0;                 /* Select the RAW Output Mode through Local options*/
-    newtio.c_cflag |= (CLOCAL | CREAD); /* Select the Local Mode & Enable Receiver through Control options*/
-
-    // Make RAW Mode more explicit by turning Canonical Mode off, Echo off, Echo Erase off and Signals off*/
-    newtio.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
-
-    // Disable Software Flow Control
-    newtio.c_iflag &= ~(IXON | IXOFF | IXANY);
-
-    // Set Data format to 8N1
-    newtio.c_cflag &= ~CSIZE;  /* Mask the Character Size Bits through Control options*/
-    newtio.c_cflag |= CS8;     /* Select Character Size to 8-Bits through Control options*/
-    newtio.c_cflag &= ~PARENB; /* Select Parity Disable through Control options*/
-    newtio.c_cflag &= ~PARODD; /* Select the Even Parity (Disabled) through Control options*/
-    newtio.c_cflag &= ~CSTOPB; /*Set number of Stop Bits to 1*/
-
-    // Timout Parameters. Set to 0 characters (VMIN) and 10 second (VTIME) timeout. This was done to prevent the read call from blocking indefinitely.*/
-    newtio.c_cc[VMIN] = 0;
-    newtio.c_cc[VTIME] = 100;
 
     /* Flush the Input buffer and set the attribute NOW without waiting for Data to Complete*/
     tcflush(serial_handle_, TCIFLUSH);
-    tcsetattr(serial_handle_, TCSANOW, &newtio);
+    tcsetattr(serial_handle_, TCSANOW, &tty);
 }
 
 void SerialRobotInterface::disconnect() {
@@ -72,9 +78,10 @@ void SerialRobotInterface::readEncodersMeasurements()
     {
         std::cout << "sending enc request: " << msg_out << std::endl;
         sendMessage(msg_out);
+
         std::string msg_in = readMessage();
         std::cout << "recived: " << msg_in << std::endl;
-        elaborateMessage(msg_in);
+        // elaborateMessage(msg_in);
     }
     catch(errors code)
     {
@@ -116,21 +123,21 @@ std::string SerialRobotInterface::readMessage() const
 {
     if(!isConnected())
         throw DEVICE_NOT_CONNECTED;
-    char buf[BUFFER_SIZE + 1] = "";
+    char c;
     std::string message = "";
-    int count_rvc;
-    // while (count_rvc > 0 && count_rvc > BUFFER_SIZE) {
-    //     count_rvc = read(serial_handle_, buf, BUFFER_SIZE);
-    //     message.append(buf, count_rvc);
-    // }
-    while ((count_rvc = read(serial_handle_, buf, BUFFER_SIZE)) > 0) {
-        message.append(buf, count_rvc);
-
-        // No further data.
-        if (count_rvc < BUFFER_SIZE)
+    int bytes_read;
+    while ((bytes_read = read(serial_handle_, &c, 1)) > 0) 
+    {
+        if (bytes_read > 0) {
+            if (c == '\n' || c == '\r') {
+                break;
+            }
+            message.push_back(c);
+        } else if (bytes_read < 0) {
             break;
+        }
     }
-    if (count_rvc < 0) {
+    if (bytes_read < 0) {
         if (errno == EAGAIN)
             throw SERIAL_IO;
         else

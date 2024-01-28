@@ -18,13 +18,14 @@
 #include <errno.h> // Error number definitions
 #include <termios.h> // POSIX terminal control definitionss
 #include <time.h>   // time calls
+#include <string>
 
 #define INVALID_HANDLE -1
 #define CTRL_MOTOR_MAX_VALUE 1000
 #define ID_RPM_STRING "RPM" // string that identifies an encoder measurement
 #define RPM_MESSAGE_OFFSET 5 // offset before the rpm value of the encoder measurement
 #define SEPARATOR_STRING ","
-#define BUFFER_SIZE 1024
+#define BUFFER_SIZE 256
 #define WAIT_AFTER_MESSAGE_TX_MS 10
 
 double mapRange(double val1, double max1, double max2);
