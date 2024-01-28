@@ -1,2 +1,0 @@
-int32 encoder_sx
-int32 encoder_dx
