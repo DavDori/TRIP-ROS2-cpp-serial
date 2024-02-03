@@ -43,6 +43,9 @@ void printErrorCode(errors code)
     case SERIAL_IO:
         std::cout << "ERROR: serial IO. CODE:["<< code << "]"<< std::endl;
         break;
+    case EMPTY_STRING:
+        std::cout << "ERROR: string of size 0. CODE:["<< code << "]"<< std::endl;
+        break;
     default:
         std::cout << "Code not found CODE:["<< code << "]" << std::endl;
         break;

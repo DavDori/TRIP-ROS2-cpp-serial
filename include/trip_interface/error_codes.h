@@ -16,7 +16,8 @@ enum errors {
     DEVICE_NOT_CONNECTED,
     TRANSMISSION_FAILED,
     NO_SERIAL_RECEIVE,
-    SERIAL_IO
+    SERIAL_IO,
+    EMPTY_STRING
 };
 
 void printErrorCode(errors code);
