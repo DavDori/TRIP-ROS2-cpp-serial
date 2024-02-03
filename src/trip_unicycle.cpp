@@ -82,7 +82,7 @@ public:
         
         enc_pub = this->create_publisher<sensor_msgs::msg::JointState>("trip/encoders", 1);
         cmd_sub = this->create_subscription<geometry_msgs::msg::Twist>(
-            "/vel_cmd", qos, 
+            "/cmd_vel", qos, 
             std::bind(&RobotNode::velocityCmdCallback, this, std::placeholders::_1)
             );
         timer_enc = this->create_wall_timer(
