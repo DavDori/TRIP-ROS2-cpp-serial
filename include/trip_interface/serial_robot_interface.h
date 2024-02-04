@@ -22,9 +22,10 @@
 
 #define INVALID_HANDLE -1
 #define CTRL_MOTOR_MAX_VALUE 1000
-#define ID_RPM_STRING "RPM" // string that identifies an encoder measurement
-#define RPM_MESSAGE_OFFSET 5 // offset before the rpm value of the encoder measurement
-#define SEPARATOR_STRING ","
+#define ID_RPM_STRING 'V' // string that identifies an encoder measurement
+#define ID_TIME_STRING 'T' // string that identifies a time value
+#define RPM_MESSAGE_OFFSET 1 // offset before the rpm value of the encoder measurement
+#define SEPARATOR_STRING ','
 #define BUFFER_SIZE 256
 #define WAIT_AFTER_MESSAGE_TX_MS 10
 
