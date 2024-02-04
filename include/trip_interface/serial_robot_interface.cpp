@@ -107,9 +107,7 @@ void SerialRobotInterface::sendMessage(const std::string &message)
 
     // Verify weather the Transmitting Data on UART was Successful or Not
     if (count_sent < 0)
-        throw TRANSMISSION_FAILED;
-    usleep(WAIT_AFTER_MESSAGE_TX_MS * 1000l);
-    
+        throw TRANSMISSION_FAILED;    
 }
 
 std::string SerialRobotInterface::readMessage() const
