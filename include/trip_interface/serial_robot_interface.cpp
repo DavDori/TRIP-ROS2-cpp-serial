@@ -69,7 +69,7 @@ bool SerialRobotInterface::isConnected() const {
 
 void SerialRobotInterface::readEncodersMeasurements()
 {
-    std::string msg_out = "ENC"; 
+    std::string msg_out = "E\n"; 
     try
     {
         std::cout << "sending enc request: " << msg_out << std::endl;
@@ -88,7 +88,7 @@ void SerialRobotInterface::readEncodersMeasurements()
 void SerialRobotInterface::setMotorSpeed(int id, double velocity)
 {
     std::ostringstream oss;
-    oss << "CSET," << id << "," << std::fixed << std::setprecision(2) << velocity;
+    oss << "CSET," << id << "," << std::fixed << std::setprecision(2) << velocity << std::endl;
     std::string command = oss.str();
     sendMessage(command);
 }
@@ -96,7 +96,7 @@ void SerialRobotInterface::setMotorSpeed(int id, double velocity)
 void SerialRobotInterface::sendMotorCmd(int id, double cmd_value)
 {
     std::ostringstream oss;
-    oss << "MSET," << id << "," << std::fixed << std::setprecision(2) << cmd_value;
+    oss << "MSET," << id << "," << std::fixed << std::setprecision(2) << cmd_value << std::endl;
     std::string command = oss.str();
     sendMessage(command);
 }
