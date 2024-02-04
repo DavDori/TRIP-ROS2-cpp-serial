@@ -53,15 +53,15 @@ public:
         this->get_parameter("pulse_per_revolution", ppr);
 
         try{
-            EncoderLeft.reset(new Encoder(1, ppr));
-            EncoderRight.reset(new Encoder(2, ppr));
+            EncoderLeft.reset(new Encoder(0, ppr));
+            EncoderRight.reset(new Encoder(1, ppr));
             Device.reset(new SerialRobotInterface(
                 port, 
                 baud_rate, 
                 std::vector<std::shared_ptr<Encoder>>{EncoderLeft,EncoderRight}));
 
-            MotorLeft.reset(new Motor(1, Device));
-            MotorRight.reset(new Motor(2, Device));
+            MotorLeft.reset(new Motor(0, Device));
+            MotorRight.reset(new Motor(1, Device));
         }
         catch(errors code){
             printErrorCode(code);
