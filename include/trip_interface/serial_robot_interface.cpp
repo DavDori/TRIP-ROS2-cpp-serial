@@ -110,7 +110,7 @@ void SerialRobotInterface::sendMessage(const std::string &message)
         throw TRANSMISSION_FAILED;    
 }
 
-std::string SerialRobotInterface::readMessage() const
+std::string SerialRobotInterface::readLine() const
 {
     if(!isConnected())
         throw DEVICE_NOT_CONNECTED;
@@ -136,6 +136,8 @@ std::string SerialRobotInterface::readMessage() const
     }
     return message;
 }
+
+
 
 void SerialRobotInterface::elaborateMessage(const std::string &message)
 {

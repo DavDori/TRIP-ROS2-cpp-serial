@@ -43,7 +43,7 @@ private:
 
     void sendMotorCmd(int id, double cmd_value);
     void sendMessage(const std::string& message);
-    std::string readMessage() const;
+    std::string readLine() const;
     void elaborateMessage(const std::string& message);
     void initSerialPort();
     unsigned long extractTime(const std::string& message);
