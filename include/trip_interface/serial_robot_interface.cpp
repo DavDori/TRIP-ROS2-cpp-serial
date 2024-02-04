@@ -72,12 +72,9 @@ void SerialRobotInterface::readEncodersMeasurements()
     std::string msg_out = "E\n"; 
     try
     {
-        std::cout << "sending enc request: " << msg_out << std::endl;
         sendMessage(msg_out);
-
-        std::string msg_in = readMessage();
-        std::cout << "recived: " << msg_in << std::endl;
-        // elaborateMessage(msg_in);
+        std::string msg_in = readLine();
+        elaborateMessage(msg_in);
     }
     catch(errors code)
     {
