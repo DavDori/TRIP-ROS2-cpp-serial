@@ -139,25 +139,18 @@ std::string SerialRobotInterface::readMessage() const
 
 void SerialRobotInterface::elaborateMessage(const std::string &message)
 {
-
-    // Extract the first 3 characters
-    std::string prefix = message.substr(0, 3);
-
     // The hash function converts the string into a integer number
+    
     try
     {
-        std::cout << message << std::endl;
-        unsigned long hash_value = hash_djb2(prefix.c_str());
-        if(hash_djb2("ENC") == hash_value)
+        if(message.size() == 0)
         {
-            std::istringstream input_stream(message);
-            std::string line;
-            for(size_t i = 0; i < encoders_.size(); i++)
-            {
-                std::getline(input_stream, line);
-                double velocity_rpm = extractRPM(line);
-                encoders_.at(i)->setVelocity(velocity_rpm);
-            }
+            throw EMPTY_STRING;               
+        }
+        char id = message.at(0);
+        if('E' == id)
+        {
+            parseEncodersMessage(message);
         }
         else
         {
