@@ -164,6 +164,18 @@ void SerialRobotInterface::elaborateMessage(const std::string &message)
     }
 }
 
+void SerialRobotInterface::parseEncodersMessage(const std::string& message)
+{
+    std::istringstream input_stream(message);
+    std::string token;
+    
+    for(size_t i = 0; i < encoders_.size(); i++)
+    {
+        std::getline(input_stream, token, SEPARATOR_STRING);
+        double velocity_rpm = extractRPM(token);
+        encoders_.at(i)->setVelocity(velocity_rpm);
+    }
+}
 double SerialRobotInterface::extractRPM(const std::string& message)
 {
     size_t pos_msg = message.find(ID_RPM_STRING);
