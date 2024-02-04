@@ -176,10 +176,11 @@ void SerialRobotInterface::parseEncodersMessage(const std::string& message)
         encoders_.at(i)->setVelocity(velocity_rpm);
     }
 }
+
 double SerialRobotInterface::extractRPM(const std::string& message)
 {
     size_t pos_msg = message.find(ID_RPM_STRING);
-    size_t pos_separator = message.find(SEPARATOR_STRING);
+    size_t pos_separator = message.find('T');
 
     if(std::string::npos == pos_msg || std::string::npos == pos_separator)
     {
@@ -187,11 +188,10 @@ double SerialRobotInterface::extractRPM(const std::string& message)
     }
     /* the rpm velocity value is after the string "RPM: " (in this case 5 characters)*/
     size_t length_rpm = pos_separator - pos_msg - RPM_MESSAGE_OFFSET;
-    std::string rpmSubstring = message.substr(pos_msg + RPM_MESSAGE_OFFSET, length_rpm);
-
+    std::string rpm_substring = message.substr(pos_msg + RPM_MESSAGE_OFFSET, length_rpm);
     // Convert the substrings to double and unsigned long
     double velocity_rpm;
-    std::istringstream(rpmSubstring) >> velocity_rpm;
+    std::istringstream(rpm_substring) >> velocity_rpm;
     return velocity_rpm;
 }
 
