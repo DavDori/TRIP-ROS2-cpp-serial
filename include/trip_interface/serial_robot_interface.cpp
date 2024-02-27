@@ -2,9 +2,10 @@
 
 SerialRobotInterface::SerialRobotInterface(const std::string &port, speed_t baud_rate, std::vector<std::shared_ptr<Encoder>> encoders)
 {
-    this->serial_handle_ = open( port.c_str(), O_RDWR| O_NOCTTY );
-    this->encoders_ = encoders;
-    this->baud_rate_ = baud_rate;
+    serial_handle_ = open( port.c_str(), O_RDWR| O_NOCTTY );
+    encoders_ = encoders;
+    baud_rate_ = baud_rate;
+
     if ( serial_handle_ == INVALID_HANDLE )
     {
         throw CANNOT_OPEN_PORT;
@@ -51,6 +52,7 @@ void SerialRobotInterface::initSerialPort()
 
     /* Flush the Input buffer and set the attribute NOW without waiting for Data to Complete*/
     tcflush(serial_handle_, TCIFLUSH);
+    // write port configuration to driver
     tcsetattr(serial_handle_, TCSANOW, &tty);
 }
 
