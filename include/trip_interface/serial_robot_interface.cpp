@@ -142,24 +142,18 @@ void SerialRobotInterface::elaborateMessage(const std::string &message)
 {
     // The hash function converts the string into a integer number
     
-    try
+    if(message.size() == 0)
     {
-        if(message.size() == 0)
-        {
-            throw EMPTY_STRING;               
-        }
-        char id = message.at(0);
-        if('E' == id)
-        {
-            parseEncodersMessage(message);
-        }
-        else
-        {
-            throw PREFIX_INVALID;
-        }
+        return;               
     }
-    catch(errors code){
-        printErrorCode(code);
+    char id = message.at(0);
+    if('E' == id)
+    {
+        parseEncodersMessage(message);
+    }
+    else
+    {
+        throw PREFIX_INVALID;
     }
 }
 
