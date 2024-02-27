@@ -2,9 +2,10 @@
 
 SerialRobotInterface::SerialRobotInterface(const std::string &port, speed_t baud_rate, std::vector<std::shared_ptr<Encoder>> encoders)
 {
-    this->serial_handle_ = open( port.c_str(), O_RDWR| O_NOCTTY );
-    this->encoders_ = encoders;
-    this->baud_rate_ = baud_rate;
+    serial_handle_ = open( port.c_str(), O_RDWR| O_NOCTTY );
+    encoders_ = encoders;
+    baud_rate_ = baud_rate;
+
     if ( serial_handle_ == INVALID_HANDLE )
     {
         throw CANNOT_OPEN_PORT;
@@ -42,8 +43,7 @@ void SerialRobotInterface::initSerialPort()
 
     tty.c_oflag &= ~OPOST; // Prevent special interpretation of output bytes (e.g. newline chars)
     tty.c_oflag &= ~ONLCR; // Prevent conversion of newline to carriage return/line feed
-    int timeout_ms = 100;
-    tty.c_cc[VTIME] = (cc_t)(timeout_ms/100);    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
+    tty.c_cc[VTIME] = 0;    // Wait for up to 1s (10 deciseconds), returning as soon as any data is received.
     tty.c_cc[VMIN] = 0;
     // Set the Tx and Rx Baud Rate to BOUDRATE
     cfsetospeed(&tty, (speed_t)baud_rate_);
@@ -52,6 +52,7 @@ void SerialRobotInterface::initSerialPort()
 
     /* Flush the Input buffer and set the attribute NOW without waiting for Data to Complete*/
     tcflush(serial_handle_, TCIFLUSH);
+    // write port configuration to driver
     tcsetattr(serial_handle_, TCSANOW, &tty);
 }
 
@@ -143,24 +144,18 @@ void SerialRobotInterface::elaborateMessage(const std::string &message)
 {
     // The hash function converts the string into a integer number
     
-    try
+    if(message.size() == 0)
     {
-        if(message.size() == 0)
-        {
-            throw EMPTY_STRING;               
-        }
-        char id = message.at(0);
-        if('E' == id)
-        {
-            parseEncodersMessage(message);
-        }
-        else
-        {
-            throw PREFIX_INVALID;
-        }
+        return;               
     }
-    catch(errors code){
-        printErrorCode(code);
+    char id = message.at(0);
+    if('E' == id)
+    {
+        parseEncodersMessage(message);
+    }
+    else
+    {
+        throw PREFIX_INVALID;
     }
 }
 
