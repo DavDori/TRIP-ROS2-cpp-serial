@@ -63,9 +63,10 @@ public:
             MotorLeft.reset(new Motor(0, Device));
             MotorRight.reset(new Motor(1, Device));
         }
-        catch(errors code){
-            printErrorCode(code);
-        }
+        catch(std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }   
 
         rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
 		auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 10), qos_profile);
@@ -89,10 +90,10 @@ public:
         {
             setMotorSpeeds(msg);
         }
-        catch(errors code)
+        catch(std::exception& e)
         {
-            printErrorCode(code);
-        }
+            std::cout << e.what() << std::endl;
+        }   
     }
 
     void setMotorSpeeds(const sensor_msgs::msg::JointState::SharedPtr joint_state_msg)
@@ -114,10 +115,10 @@ public:
         {
             sendEncoderMessage();
         }
-        catch(errors code)
+        catch(std::exception& e)
         {
-            printErrorCode(code);
-        }
+            std::cout << e.what() << std::endl;
+        }   
     }
 
     void sendEncoderMessage()

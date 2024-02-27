@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <cmath>
+#include <stdexcept> // exception handling
 
 class Encoder
 {

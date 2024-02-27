@@ -5,6 +5,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <stdexcept> // exception handling
 
 class DifferentialDriveModel
 {

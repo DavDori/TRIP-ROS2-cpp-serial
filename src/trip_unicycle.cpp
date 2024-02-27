@@ -73,9 +73,10 @@ public:
             MotorRight.reset(new Motor(1, Device));
             Model.reset(new DifferentialDriveModel(wheel_radius, wheel_distance, 1.0));
         }
-        catch(errors code){
-            printErrorCode(code);
-        }
+        catch(std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }   
 
         rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
 		auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 10), qos_profile);
