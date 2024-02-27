@@ -50,7 +50,7 @@ public:
         this->declare_parameter("sprocket_radius_m", 0.035);
         this->declare_parameter("track_distance_m", 0.16);
         this->declare_parameter("gearbox_ratio", 1.0);
-        this->declare_parameter("pub_rate_feedback_Hz", 1);
+        this->declare_parameter("pub_rate_feedback_Hz", 20);
         this->declare_parameter("pulse_per_revolution", 1024.0);
 
         this->get_parameter("port", port);
