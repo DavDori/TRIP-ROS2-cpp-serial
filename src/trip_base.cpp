@@ -99,7 +99,7 @@ public:
     void setMotorSpeeds(const sensor_msgs::msg::JointState::SharedPtr joint_state_msg)
     {
         if (joint_state_msg->velocity.size() < 2)
-            throw WRONG_SIZE_JOINTSTATE_CMD;
+            throw std::length_error("Error: velocity component of joint state message must be > 2 [v,omega]");
 
         double motor_left_speed = joint_state_msg->velocity[0];
         double motor_right_speed = joint_state_msg->velocity[1];
