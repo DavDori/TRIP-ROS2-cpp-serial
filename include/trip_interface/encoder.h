@@ -19,7 +19,7 @@ public:
     Encoder(int id, double ppr);
     
     void setReferencePulseCount(double pulse_count);
-    void setVelocity(double velocity_rpm);
+    void setVelocityRPM(double velocity_rpm);
     void setPulseCount(double count);
 
     
@@ -30,6 +30,10 @@ public:
     double getRevolutions() const;
     double getRadiants() const;
     double getDegrees() const;
+
+    int getID() const;
+    double getPPR() const;
+
 };
 
 #endif

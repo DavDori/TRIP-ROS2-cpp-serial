@@ -169,7 +169,7 @@ void SerialRobotInterface::parseEncodersMessage(const std::string& message)
     {
         std::getline(input_stream, token, SEPARATOR_STRING);
         double velocity_rpm = extractRPM(token);
-        encoders_.at(i)->setVelocity(velocity_rpm);
+        encoders_.at(i)->setVelocityRPM(velocity_rpm);
     }
 }
 

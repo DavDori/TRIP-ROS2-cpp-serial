@@ -17,7 +17,7 @@ void Encoder::setReferencePulseCount(double pulse_count)
     reference_pulse_count_ = pulse_count;
 }
 
-void Encoder::setVelocity(double velocity_rpm)
+void Encoder::setVelocityRPM(double velocity_rpm)
 {
     velocity_rpm_ = velocity_rpm;
 }
@@ -45,6 +45,16 @@ double Encoder::getRadiants() const
 double Encoder::getDegrees() const
 {
     return getRevolutions() * 360.0;
+}
+
+int Encoder::getID() const
+{
+    return id_;
+}
+
+double Encoder::getPPR() const
+{
+    return pulse_per_revolution_;
 }
 
 double Encoder::getSpeedRADpS() const
