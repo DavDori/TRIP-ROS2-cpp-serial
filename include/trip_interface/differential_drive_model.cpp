@@ -2,49 +2,49 @@
 
 DifferentialDriveModel::DifferentialDriveModel(double wheel_radius, double wheel_distance, double gearbox)
 {
-    this->wheel_distance = wheel_distance;
-    this->wheel_radius = wheel_radius;
-    this->gearbox = gearbox;
+    wheel_distance_ = wheel_distance;
+    wheel_radius_ = wheel_radius;
+    gearbox_ = gearbox;
     setUnicycleSpeed(0.0,0.0);
 }
 
 void DifferentialDriveModel::setUnicycleSpeed(double lin_speed, double ang_speed)
 {
-    linear_speed = lin_speed;
-    angular_speed = ang_speed;
+    linear_speed_ = lin_speed;
+    angular_speed_ = ang_speed;
 }
 
 void DifferentialDriveModel::setDifferentialSpeed(double left_wheel_speed, double right_wheel_speed)
 {
-    linear_speed = 0.5*wheel_radius*(left_wheel_speed + right_wheel_speed);
-    angular_speed = wheel_radius*(-left_wheel_speed + right_wheel_speed) / wheel_distance;
+    linear_speed_ = 0.5*wheel_radius_*(left_wheel_speed + right_wheel_speed);
+    angular_speed_ = wheel_radius_*(-left_wheel_speed + right_wheel_speed) / wheel_distance_;
 }
 
 double DifferentialDriveModel::getLeftWheelRotationalSpeed() const
 {
-    double wheel_speed = linear_speed - angular_speed * (0.5*wheel_distance);
-    return wheel_speed / wheel_radius;
+    double wheel_speed = linear_speed_ - angular_speed_ * (0.5*wheel_distance_);
+    return wheel_speed / wheel_radius_;
 }
 double DifferentialDriveModel::getRightWheelRotationalSpeed() const
 {
-    double wheel_speed = linear_speed + angular_speed * (0.5*wheel_distance);
-    return wheel_speed / wheel_radius;
+    double wheel_speed = linear_speed_ + angular_speed_ * (0.5*wheel_distance_);
+    return wheel_speed / wheel_radius_;
 }
 
 double DifferentialDriveModel::getLeftMotorRotationalSpeed() const
 {
-    return getLeftWheelRotationalSpeed() * gearbox;
+    return getLeftWheelRotationalSpeed() * gearbox_;
 }
 double DifferentialDriveModel::getRightMotorRotationalSpeed() const
 {
-    return getRightWheelRotationalSpeed() * gearbox;
+    return getRightWheelRotationalSpeed() * gearbox_;
 }
 
 double DifferentialDriveModel::getLinearSpeed() const
 {
-    return linear_speed;
+    return linear_speed_;
 }
 double DifferentialDriveModel::getAngularSpeed() const
 {
-    return angular_speed;
+    return angular_speed_;
 }

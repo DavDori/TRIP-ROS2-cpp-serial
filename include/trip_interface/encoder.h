@@ -10,11 +10,11 @@
 class Encoder
 {
 private:
-    double pulse_per_revolution;
-    double pulse_count;
-    double reference_pulse_count;
-    double velocity_rpm;
-    int id;
+    double pulse_per_revolution_;
+    double pulse_count_;
+    double reference_pulse_count_;
+    double velocity_rpm_;
+    int id_;
 public:
     Encoder(int id, double ppr);
     

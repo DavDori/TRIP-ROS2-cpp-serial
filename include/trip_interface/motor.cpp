@@ -2,8 +2,8 @@
 
 Motor::Motor(int id, std::shared_ptr<SerialRobotInterface> Device)
 {
-    this->id = id;
-    this->Device = Device;
+    id_ = id;
+    Device_ = Device;
 }
 
 void Motor::moveRADPS(double rad_per_sec)
@@ -18,5 +18,5 @@ void Motor::moveDEGPS(double deg_per_sec)
 }
 void Motor::moveRPM(double rpm)
 {
-    Device->setMotorSpeed(id, rpm);
+    Device_->setMotorSpeed(id_, rpm);
 }

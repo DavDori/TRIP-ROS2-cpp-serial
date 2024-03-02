@@ -3,34 +3,36 @@
 
 Encoder::Encoder(int id, double ppr)
 {
-    this->pulse_per_revolution = ppr;
-    this->id = id;    
-    reference_pulse_count = 0.0;
+    pulse_per_revolution_ = ppr;
+    id_ = id;    
+    reference_pulse_count_ = 0.0;
+    velocity_rpm_ = 0.0;
+    pulse_count_ = 0.0;
 }
 
 void Encoder::setReferencePulseCount(double pulse_count)
 {
-    reference_pulse_count = pulse_count;
+    reference_pulse_count_ = pulse_count;
 }
 
 void Encoder::setVelocity(double velocity_rpm)
 {
-    this->velocity_rpm = velocity_rpm;
+    velocity_rpm_ = velocity_rpm;
 }
 
 void Encoder::setPulseCount(double count)
 {
-    this->pulse_count = count;
+    pulse_count_ = count;
 }
 
 double Encoder::getPulseCount() const
 {
-    return pulse_count - reference_pulse_count;
+    return pulse_count_ - reference_pulse_count_;
 }
 
 double Encoder::getRevolutions() const
 {
-    return getPulseCount() / pulse_per_revolution;
+    return getPulseCount() / pulse_per_revolution_;
 }
 
 double Encoder::getRadiants() const
@@ -45,10 +47,10 @@ double Encoder::getDegrees() const
 
 double Encoder::getSpeedRADpS() const
 {
-    return velocity_rpm * M_PI / 30.0;
+    return velocity_rpm_ * M_PI / 30.0;
 }
 
 double Encoder::getSpeedRPM() const
 {
-    return velocity_rpm;
+    return velocity_rpm_;
 }
