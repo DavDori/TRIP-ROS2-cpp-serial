@@ -14,6 +14,11 @@ DifferentialDriveModel::DifferentialDriveModel(double wheel_radius, double wheel
     setUnicycleSpeed(0.0,0.0);
 }
 
+DifferentialDriveModel::DifferentialDriveModel(double wheel_radius, double wheel_distance)
+{
+    DifferentialDriveModel(wheel_radius, wheel_distance, 1.0);
+}
+
 void DifferentialDriveModel::setUnicycleSpeed(double lin_speed, double ang_speed)
 {
     linear_speed_ = lin_speed;

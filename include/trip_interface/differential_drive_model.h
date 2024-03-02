@@ -18,6 +18,7 @@ private:
 
 public:
     DifferentialDriveModel(double wheel_radius, double wheel_distance, double gearbox);
+    DifferentialDriveModel(double wheel_radius, double wheel_distance);
 
     void setUnicycleSpeed(double lin_speed, double ang_speed);
     void setDifferentialSpeed(double left_wheel_speed, double right_wheel_speed);
