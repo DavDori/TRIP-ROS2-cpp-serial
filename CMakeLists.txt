@@ -19,8 +19,8 @@ endif()
 find_package(ament_cmake REQUIRED)
 
 find_package(rclcpp REQUIRED)
-find_package(sensor_msgs REQUIRED)
 find_package(std_msgs REQUIRED)
+find_package(sensor_msgs REQUIRED)
 find_package(geometry_msgs REQUIRED)
 
 install(
@@ -76,5 +76,30 @@ ament_target_dependencies(trip_unicycle
 install(TARGETS trip_base trip_unicycle
   DESTINATION lib/${PROJECT_NAME}
 )
+
+
+if(BUILD_TESTING)
+  find_package(ament_lint_auto REQUIRED)
+  find_package(ament_cmake_gtest REQUIRED)
+  
+  ament_add_gtest(${PROJECT_NAME}_test 
+    test/main.cpp
+    test/encoder_unittest.cpp
+    test/differential_drive_model_unittest.cpp
+  )
+  target_include_directories(${PROJECT_NAME}_test PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+  )
+  ament_target_dependencies(${PROJECT_NAME}_test 
+    rclcpp 
+    geometry_msgs 
+    sensor_msgs
+    std_msgs
+  )
+  target_link_libraries(${PROJECT_NAME}_test encoder)
+  target_link_libraries(${PROJECT_NAME}_test differential_drive_model)
+endif()
+
 
 ament_package()
