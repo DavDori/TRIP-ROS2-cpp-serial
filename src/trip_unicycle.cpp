@@ -35,7 +35,7 @@ private:
     }
 
 public:
-    RobotNode() : rclcpp::Node("trip")
+    RobotNode() : rclcpp::Node("trip_serial")
     {
         double ppr;
         double max_rpm;
