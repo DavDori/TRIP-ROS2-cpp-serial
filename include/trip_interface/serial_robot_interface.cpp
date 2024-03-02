@@ -6,9 +6,9 @@ SerialRobotInterface::SerialRobotInterface(const std::string &port, speed_t baud
     encoders_ = encoders;
     baud_rate_ = baud_rate;
 
-    if ( serial_handle_ == INVALID_HANDLE )
+    if ( INVALID_HANDLE == serial_handle_ )
     {
-        throw CANNOT_OPEN_PORT;
+        throw std::runtime_error("Error: cannot open Serial Port!");
     }
     initSerialPort();
 
@@ -17,13 +17,13 @@ SerialRobotInterface::SerialRobotInterface(const std::string &port, speed_t baud
 void SerialRobotInterface::initSerialPort()
 {
     if (!isConnected())
-        throw DEVICE_NOT_CONNECTED;
+        throw std::runtime_error("Error: Serial port is not open!");
     struct termios tty;
     tcgetattr(serial_handle_, &tty);
 
       // Read in existing settings, and handle any error
     if(tcgetattr(serial_handle_, &tty) != 0) {
-        throw DEVICE_NOT_CONNECTED;
+        throw std::runtime_error("Error: cannot find any connected device!");
     }
 
     tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
@@ -77,9 +77,9 @@ void SerialRobotInterface::readEncodersMeasurements()
         std::string msg_in = readLine();
         elaborateMessage(msg_in);
     }
-    catch(errors code)
+    catch(std::exception& e)
     {
-        printErrorCode(code);
+        std::cout << e.what() << std::endl;
     }   
 }
 
@@ -102,19 +102,20 @@ void SerialRobotInterface::sendMotorCmd(int id, double cmd_value)
 void SerialRobotInterface::sendMessage(const std::string &message)
 {
     if (!isConnected())
-        throw DEVICE_NOT_CONNECTED;
+        throw std::runtime_error("Error: trying to send message but serial port is not open.");
+
 
     int count_sent = write(serial_handle_, message.c_str(), message.length());
 
     // Verify weather the Transmitting Data on UART was Successful or Not
     if (count_sent < 0)
-        throw TRANSMISSION_FAILED;    
+        throw std::runtime_error("Error: trying to send message but transmission failed.");
 }
 
 std::string SerialRobotInterface::readLine() const
 {
     if(!isConnected())
-        throw DEVICE_NOT_CONNECTED;
+        throw std::runtime_error("Error: trying to send message but serial port is not open.");
     char c;
     std::string message = "";
     int bytes_read;
@@ -131,9 +132,9 @@ std::string SerialRobotInterface::readLine() const
     }
     if (bytes_read < 0) {
         if (errno == EAGAIN)
-            throw SERIAL_IO;
+            throw std::runtime_error("Warning: serial io.");
         else
-            throw NO_SERIAL_RECEIVE;
+            throw std::runtime_error("Warning: trying to send message but transmission failed.");
     }
     return message;
 }
@@ -144,7 +145,7 @@ void SerialRobotInterface::elaborateMessage(const std::string &message)
 {
     // The hash function converts the string into a integer number
     
-    if(message.size() == 0)
+    if(0 == message.size())
     {
         return;               
     }
@@ -155,7 +156,7 @@ void SerialRobotInterface::elaborateMessage(const std::string &message)
     }
     else
     {
-        throw PREFIX_INVALID;
+        throw std::runtime_error("Warning: recived message with invalid prefix");
     }
 }
 
@@ -179,7 +180,7 @@ double SerialRobotInterface::extractRPM(const std::string& message)
 
     if(std::string::npos == pos_msg || std::string::npos == pos_separator)
     {
-        throw POSITION_MESSAGE_ID_ERROR;
+        throw std::runtime_error("Error: expected an ID in encoder velocity message");
     }
     /* the rpm velocity value is after the string "RPM: " (in this case 5 characters)*/
     size_t length_rpm = pos_separator - pos_msg - RPM_MESSAGE_OFFSET;
@@ -195,6 +196,8 @@ double mapRange(double val1, double max1, double max2)
     double val2 = 0.0;
     if(max1 != 0.0)
         val2 = val1 * max2 / max1;
+    else
+        throw std::invalid_argument("Error: mapRange recived max1 = 0");
     return val2;
 }
 

@@ -2,6 +2,12 @@
 
 DifferentialDriveModel::DifferentialDriveModel(double wheel_radius, double wheel_distance, double gearbox)
 {
+    if(0.0 == wheel_radius)
+        throw std::invalid_argument("Error: wheel radius cannot be 0!");
+    if(0.0 == gearbox)
+        throw std::invalid_argument("Error: gearbox ratio cannot be 0!");
+    if(0.0 == wheel_distance)
+        throw std::invalid_argument("Error: distance between  wheels cannot be 0!");
     wheel_distance_ = wheel_distance;
     wheel_radius_ = wheel_radius;
     gearbox_ = gearbox;

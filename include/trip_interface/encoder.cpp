@@ -3,6 +3,8 @@
 
 Encoder::Encoder(int id, double ppr)
 {
+    if(0.0 == ppr)
+        throw std::invalid_argument("Error: parameter pulses per revolution for encoder cannot be 0.0!");
     pulse_per_revolution_ = ppr;
     id_ = id;    
     reference_pulse_count_ = 0.0;
