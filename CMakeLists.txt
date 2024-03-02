@@ -33,7 +33,6 @@ install(
   DESTINATION share/${PROJECT_NAME}
 )
 
-add_library(error_codes include/${PROJECT_NAME}/error_codes.cpp)
 add_library(serial_robot_interface include/${PROJECT_NAME}/serial_robot_interface.cpp)
 add_library(motor include/${PROJECT_NAME}/motor.cpp)
 add_library(encoder include/${PROJECT_NAME}/encoder.cpp)
@@ -43,17 +42,14 @@ add_executable(trip_base src/trip_base.cpp)
 add_executable(trip_unicycle src/trip_unicycle.cpp)
 
 target_link_libraries(serial_robot_interface 
-  error_codes
   encoder)
 target_link_libraries(motor 
   serial_robot_interface)
 target_link_libraries(trip_base 
-  error_codes
   encoder
   motor
   serial_robot_interface)
 target_link_libraries(trip_unicycle 
-  error_codes
   encoder
   differential_drive_model
   motor

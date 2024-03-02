@@ -63,9 +63,10 @@ public:
             MotorLeft.reset(new Motor(0, Device));
             MotorRight.reset(new Motor(1, Device));
         }
-        catch(errors code){
-            printErrorCode(code);
-        }
+        catch(std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }   
 
         rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
 		auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 10), qos_profile);
@@ -89,16 +90,16 @@ public:
         {
             setMotorSpeeds(msg);
         }
-        catch(errors code)
+        catch(std::exception& e)
         {
-            printErrorCode(code);
-        }
+            std::cout << e.what() << std::endl;
+        }   
     }
 
     void setMotorSpeeds(const sensor_msgs::msg::JointState::SharedPtr joint_state_msg)
     {
         if (joint_state_msg->velocity.size() < 2)
-            throw WRONG_SIZE_JOINTSTATE_CMD;
+            throw std::length_error("Error: velocity component of joint state message must be > 2 [v,omega]");
 
         double motor_left_speed = joint_state_msg->velocity[0];
         double motor_right_speed = joint_state_msg->velocity[1];
@@ -114,10 +115,10 @@ public:
         {
             sendEncoderMessage();
         }
-        catch(errors code)
+        catch(std::exception& e)
         {
-            printErrorCode(code);
-        }
+            std::cout << e.what() << std::endl;
+        }   
     }
 
     void sendEncoderMessage()

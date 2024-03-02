@@ -18,16 +18,16 @@
 class RobotNode : public rclcpp::Node 
 {
 private:
-    rclcpp::TimerBase::SharedPtr timer_enc;
-    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr enc_pub;
-    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub;
+    rclcpp::TimerBase::SharedPtr timer_enc_;
+    rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr enc_pub_;
+    rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub_;
 
-	std::shared_ptr<DifferentialDriveModel> Model;
-    std::shared_ptr<SerialRobotInterface> Device;
-    std::shared_ptr<Encoder> EncoderLeft;
-    std::shared_ptr<Encoder> EncoderRight;
-    std::shared_ptr<Motor> MotorLeft;
-    std::shared_ptr<Motor> MotorRight;
+	std::shared_ptr<DifferentialDriveModel> Model_;
+    std::shared_ptr<SerialRobotInterface> Device_;
+    std::shared_ptr<Encoder> EncoderLeft_;
+    std::shared_ptr<Encoder> EncoderRight_;
+    std::shared_ptr<Motor> MotorLeft_;
+    std::shared_ptr<Motor> MotorRight_;
 
     double getTimeSec()
     {
@@ -35,7 +35,7 @@ private:
     }
 
 public:
-    RobotNode() : rclcpp::Node("trip")
+    RobotNode() : rclcpp::Node("trip_serial")
     {
         double ppr;
         double max_rpm;
@@ -63,29 +63,30 @@ public:
         this->get_parameter("pulse_per_revolution", ppr);
 
         try{
-            EncoderLeft.reset(new Encoder(0, ppr));
-            EncoderRight.reset(new Encoder(1, ppr));
-            Device.reset(new SerialRobotInterface(
+            EncoderLeft_.reset(new Encoder(0, ppr));
+            EncoderRight_.reset(new Encoder(1, ppr));
+            Device_.reset(new SerialRobotInterface(
                 port, 
                 baud_rate, 
-                std::vector<std::shared_ptr<Encoder>>{EncoderLeft,EncoderRight}));
-            MotorLeft.reset(new Motor(0, Device));
-            MotorRight.reset(new Motor(1, Device));
-            Model.reset(new DifferentialDriveModel(wheel_radius, wheel_distance, 1.0));
+                std::vector<std::shared_ptr<Encoder>>{EncoderLeft_,EncoderRight_}));
+            MotorLeft_.reset(new Motor(0, Device_));
+            MotorRight_.reset(new Motor(1, Device_));
+            Model_.reset(new DifferentialDriveModel(wheel_radius, wheel_distance, 1.0));
         }
-        catch(errors code){
-            printErrorCode(code);
-        }
+        catch(std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }   
 
         rmw_qos_profile_t qos_profile = rmw_qos_profile_sensor_data;
 		auto qos = rclcpp::QoS(rclcpp::QoSInitialization(qos_profile.history, 10), qos_profile);
         
-        enc_pub = this->create_publisher<sensor_msgs::msg::JointState>("trip/encoders", 1);
-        cmd_sub = this->create_subscription<geometry_msgs::msg::Twist>(
+        enc_pub_ = this->create_publisher<sensor_msgs::msg::JointState>("trip/encoders", 1);
+        cmd_sub_ = this->create_subscription<geometry_msgs::msg::Twist>(
             "/cmd_vel", qos, 
             std::bind(&RobotNode::velocityCmdCallback, this, std::placeholders::_1)
             );
-        timer_enc = this->create_wall_timer(
+        timer_enc_ = this->create_wall_timer(
             std::chrono::milliseconds(int(MILLI / rate_feedback)), 
             std::bind(&RobotNode::feedbackCallback, this)
             );
@@ -101,22 +102,22 @@ public:
         convert unicycle velocities [linear, angular] into each 
         motors required speed to achieve that unicycle behaviour
         */
-        Model->setUnicycleSpeed(lin_vel, ang_vel);
-        double motor_left_speed = Model->getLeftMotorRotationalSpeed();
-        double motor_right_speed = Model->getRightMotorRotationalSpeed();
+        Model_->setUnicycleSpeed(lin_vel, ang_vel);
+        double motor_left_speed = Model_->getLeftMotorRotationalSpeed();
+        double motor_right_speed = Model_->getRightMotorRotationalSpeed();
         setMotorSpeeds(motor_left_speed, motor_right_speed);
     }
 
     void setMotorSpeeds(double motor_left_speed, double motor_right_speed)
     {
-        MotorLeft->moveRADPS(motor_left_speed);
-        MotorRight->moveRADPS(motor_right_speed);
+        MotorLeft_->moveRADPS(motor_left_speed);
+        MotorRight_->moveRADPS(motor_right_speed);
     }
 
 
     void feedbackCallback() 
     {
-        Device->readEncodersMeasurements();
+        Device_->readEncodersMeasurements();
         sendEncoderMessage();
     }
 
@@ -126,13 +127,13 @@ public:
 
         msg.name = {"left", "right"};
         msg.position = std::vector<double>{
-            EncoderLeft->getRadiants(),
-            EncoderRight->getRadiants()};
+            EncoderLeft_->getRadiants(),
+            EncoderRight_->getRadiants()};
         msg.velocity = std::vector<double>{
-            EncoderLeft->getSpeedRPM(),
-            EncoderRight->getSpeedRPM()};
+            EncoderLeft_->getSpeedRPM(),
+            EncoderRight_->getSpeedRPM()};
 
-        enc_pub->publish(msg);
+        enc_pub_->publish(msg);
     }
 };
 

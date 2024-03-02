@@ -7,11 +7,11 @@
 #include <string>
 #include <cmath>
 #include <vector>
-#include "error_codes.h"
 #include "encoder.h"
 #include <iomanip>  // For formatting the double variable
 #include <sstream>  // For converting int and double to string
 
+#include <stdexcept> // exception handling
 #include <stdio.h> // standard input / output functions
 #include <unistd.h> // UNIX standard function definitions
 #include <fcntl.h> // File control definitions

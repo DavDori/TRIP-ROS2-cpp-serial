@@ -14,8 +14,8 @@
 class Motor
 {
 private:
-    int id;
-    std::shared_ptr<SerialRobotInterface> Device;
+    int id_;
+    std::shared_ptr<SerialRobotInterface> Device_;
 public:
     Motor(int id, std::shared_ptr<SerialRobotInterface> Device);
     
