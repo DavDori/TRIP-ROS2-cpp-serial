@@ -1,0 +1,19 @@
+name: 'build and test package'
+
+on:
+    push:
+        branches: 
+            - stable
+    pull_request:
+        branches: 
+            - stable
+
+jobs:
+  build-test-pkg:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: 'ros-industrial/industrial_ci@master'
+        env: 
+          ROS_DISTRO: humble
+          ROS_REPO: testing
