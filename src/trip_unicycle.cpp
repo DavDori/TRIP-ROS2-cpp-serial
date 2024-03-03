@@ -4,7 +4,7 @@
 #include <sstream>
 
 #include "rclcpp/rclcpp.hpp"
-#include "trip_interface/serial_robot_interface.h"
+#include "trip_interface/serial_interface.h"
 #include "trip_interface/encoder.h"
 #include "trip_interface/motor.h"
 #include "trip_interface/differential_drive_model.h"
@@ -23,7 +23,7 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub_;
 
 	std::shared_ptr<DifferentialDriveModel> Model_;
-    std::shared_ptr<SerialRobotInterface> Device_;
+    std::shared_ptr<SerialInterface> Device_;
     std::shared_ptr<Encoder> EncoderLeft_;
     std::shared_ptr<Encoder> EncoderRight_;
     std::shared_ptr<Motor> MotorLeft_;
@@ -63,15 +63,12 @@ public:
         this->get_parameter("pulse_per_revolution", ppr);
 
         try{
-            EncoderLeft_.reset(new Encoder(0, ppr));
-            EncoderRight_.reset(new Encoder(1, ppr));
-            Device_.reset(new SerialRobotInterface(
-                port, 
-                baud_rate, 
-                std::vector<std::shared_ptr<Encoder>>{EncoderLeft_,EncoderRight_}));
+            Device_.reset(new SerialInterface(port, baud_rate));
+            
+            EncoderLeft_.reset(new Encoder(0, ppr, Device_));
+            EncoderRight_.reset(new Encoder(1, ppr, Device_));
             MotorLeft_.reset(new Motor(0, Device_));
             MotorRight_.reset(new Motor(1, Device_));
-            Model_.reset(new DifferentialDriveModel(wheel_radius, wheel_distance, 1.0));
         }
         catch(std::exception& e)
         {
@@ -117,8 +114,17 @@ public:
 
     void feedbackCallback() 
     {
-        Device_->readEncodersMeasurements();
-        sendEncoderMessage();
+        try
+        {
+            Device_->send("E\n");
+            EncoderLeft_->readMeasurement();
+            EncoderRight_->readMeasurement();
+            sendEncoderMessage();
+        }
+        catch(std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }   
     }
 
     void sendEncoderMessage()
