@@ -1,20 +1,30 @@
-#include "serial_robot_interface.h"
+#include "serial_interface.h"
 
-SerialRobotInterface::SerialRobotInterface(const std::string &port, speed_t baud_rate, std::vector<std::shared_ptr<Encoder>> encoders)
+SerialInterface::SerialInterface(const std::string& port, speed_t baud_rate)
 {
-    serial_handle_ = open( port.c_str(), O_RDWR| O_NOCTTY );
-    encoders_ = encoders;
-    baud_rate_ = baud_rate;
+    connect(port, baud_rate);
+    last_message_ = "";
+}
 
+SerialInterface::SerialInterface()
+{
+    serial_handle_ = INVALID_HANDLE;
+    baud_rate_ =  0;
+    last_message_ = "";
+}
+
+void SerialInterface::connect(const std::string& port, speed_t baud_rate) {
+    disconnect(); // close old connection if present
+    serial_handle_ = open( port.c_str(), O_RDWR| O_NOCTTY );
+    baud_rate_ = baud_rate;
     if ( INVALID_HANDLE == serial_handle_ )
     {
         throw std::runtime_error("Error: cannot open Serial Port!");
     }
     initSerialPort();
-
 }
 
-void SerialRobotInterface::initSerialPort()
+void SerialInterface::initSerialPort()
 {
     if (!isConnected())
         throw std::runtime_error("Error: Serial port is not open!");
@@ -56,50 +66,19 @@ void SerialRobotInterface::initSerialPort()
     tcsetattr(serial_handle_, TCSANOW, &tty);
 }
 
-void SerialRobotInterface::disconnect() {
+void SerialInterface::disconnect() {
     if (isConnected())
         close(serial_handle_);
 
     serial_handle_ = INVALID_HANDLE;
 }
 
-bool SerialRobotInterface::isConnected() const {
+bool SerialInterface::isConnected() const {
     return serial_handle_ != INVALID_HANDLE;
 }
 
 
-void SerialRobotInterface::readEncodersMeasurements()
-{
-    std::string msg_out = "E\n"; 
-    try
-    {
-        sendMessage(msg_out);
-        std::string msg_in = readLine();
-        elaborateMessage(msg_in);
-    }
-    catch(std::exception& e)
-    {
-        std::cout << e.what() << std::endl;
-    }   
-}
-
-void SerialRobotInterface::setMotorSpeed(int id, double velocity)
-{
-    std::ostringstream oss;
-    oss << "CSET," << id << "," << std::fixed << std::setprecision(2) << velocity << std::endl;
-    std::string command = oss.str();
-    sendMessage(command);
-}
-
-void SerialRobotInterface::sendMotorCmd(int id, double cmd_value)
-{
-    std::ostringstream oss;
-    oss << "MSET," << id << "," << std::fixed << std::setprecision(2) << cmd_value << std::endl;
-    std::string command = oss.str();
-    sendMessage(command);
-}
-
-void SerialRobotInterface::sendMessage(const std::string &message)
+void SerialInterface::send(const std::string& message)
 {
     if (!isConnected())
         throw std::runtime_error("Error: trying to send message but serial port is not open.");
@@ -112,7 +91,13 @@ void SerialRobotInterface::sendMessage(const std::string &message)
         throw std::runtime_error("Error: trying to send message but transmission failed.");
 }
 
-std::string SerialRobotInterface::readLine() const
+std::string SerialInterface::readFeedback(const std::string &message)
+{
+    send(message);
+    return readLine();
+}
+
+std::string SerialInterface::readLine()
 {
     if(!isConnected())
         throw std::runtime_error("Error: trying to send message but serial port is not open.");
@@ -136,86 +121,6 @@ std::string SerialRobotInterface::readLine() const
         else
             throw std::runtime_error("Warning: trying to send message but transmission failed.");
     }
+    last_message_ = message;
     return message;
-}
-
-
-
-void SerialRobotInterface::elaborateMessage(const std::string &message)
-{
-    // The hash function converts the string into a integer number
-    
-    if(0 == message.size())
-    {
-        return;               
-    }
-    char id = message.at(0);
-    if('E' == id)
-    {
-        parseEncodersMessage(message);
-    }
-    else
-    {
-        throw std::runtime_error("Warning: recived message with invalid prefix");
-    }
-}
-
-void SerialRobotInterface::parseEncodersMessage(const std::string& message)
-{
-    std::istringstream input_stream(message);
-    std::string token;
-    
-    for(size_t i = 0; i < encoders_.size(); i++)
-    {
-        std::getline(input_stream, token, SEPARATOR_STRING);
-        double velocity_rpm = extractRPM(token);
-        encoders_.at(i)->setVelocityRPM(velocity_rpm);
-    }
-}
-
-double SerialRobotInterface::extractRPM(const std::string& message)
-{
-    size_t pos_msg = message.find(ID_RPM_STRING);
-    size_t pos_separator = message.find('T');
-
-    if(std::string::npos == pos_msg || std::string::npos == pos_separator)
-    {
-        throw std::runtime_error("Error: expected an ID in encoder velocity message");
-    }
-    /* the rpm velocity value is after the string "RPM: " (in this case 5 characters)*/
-    size_t length_rpm = pos_separator - pos_msg - RPM_MESSAGE_OFFSET;
-    std::string rpm_substring = message.substr(pos_msg + RPM_MESSAGE_OFFSET, length_rpm);
-    // Convert the substrings to double and unsigned long
-    double velocity_rpm;
-    std::istringstream(rpm_substring) >> velocity_rpm;
-    return velocity_rpm;
-}
-
-double mapRange(double val1, double max1, double max2)
-{
-    double val2 = 0.0;
-    if(max1 != 0.0)
-        val2 = val1 * max2 / max1;
-    else
-        throw std::invalid_argument("Error: mapRange recived max1 = 0");
-    return val2;
-}
-
-double saturate(double val, double max_val)
-{
-    if(val > max_val)
-        return max_val;
-    else if(val < -max_val)
-        return -max_val;
-    else
-        return val;
-}
-
-unsigned long hash_djb2(const std::string& str) {
-    unsigned long hash = 5381;
-    for (char c : str) {
-        hash = ((hash << 5) + hash) + c;
-    }
-
-    return hash;
 }
