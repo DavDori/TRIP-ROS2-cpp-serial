@@ -6,13 +6,13 @@ Encoder::Encoder(int id, double ppr, std::shared_ptr<SerialInterface> Device)
         throw std::invalid_argument("Error: parameter pulses per revolution for encoder cannot be 0.0!");
     pulse_per_revolution_ = ppr;
     id_ = id;    
-    reference_pulse_count_ = 0.0;
+    reference_pulse_count_ = 0;
     velocity_rpm_ = 0.0;
-    pulse_count_ = 0.0;
+    pulse_count_ = 0;
     Device_ = Device;
 }
 
-void Encoder::setReferencePulseCount(double pulse_count)
+void Encoder::setReferencePulseCount(long pulse_count)
 {
     reference_pulse_count_ = pulse_count;
 }
@@ -22,19 +22,19 @@ void Encoder::setVelocityRPM(double velocity_rpm)
     velocity_rpm_ = velocity_rpm;
 }
 
-void Encoder::setPulseCount(double count)
+void Encoder::setPulseCount(long count)
 {
     pulse_count_ = count;
 }
 
-double Encoder::getPulseCount() const
+long Encoder::getPulseCount() const
 {
     return pulse_count_ - reference_pulse_count_;
 }
 
 double Encoder::getRevolutions() const
 {
-    return getPulseCount() / pulse_per_revolution_;
+    return double(getPulseCount()) / pulse_per_revolution_;
 }
 
 double Encoder::getRadiants() const

@@ -18,8 +18,8 @@ class Encoder
 private:
     std::shared_ptr<SerialInterface> Device_;
     double pulse_per_revolution_;
-    double pulse_count_;
-    double reference_pulse_count_;
+    long pulse_count_;
+    long reference_pulse_count_;
     double velocity_rpm_;
     int id_;
 
@@ -27,18 +27,18 @@ private:
     void parseEncodersMessage(const std::string& message); 
     double extractRPM(const std::string& message);
     void setVelocityRPM(double velocity_rpm);
-    void setPulseCount(double count);
+    void setPulseCount(long count);
 
 public:
     Encoder(int id, double ppr, std::shared_ptr<SerialInterface> Device);
     
-    void setReferencePulseCount(double pulse_count);
+    void setReferencePulseCount(long pulse_count);
     
     void readMeasurement();
     double getSpeedRPM() const;
     double getSpeedRADpS() const;
 
-    double getPulseCount() const;
+    long getPulseCount() const;
     double getRevolutions() const;
     double getRadiants() const;
     double getDegrees() const;
