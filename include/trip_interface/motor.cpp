@@ -15,6 +15,7 @@ Motor::Motor(int id, std::shared_ptr<SerialInterface> Device)
     id_ = id;
     max_rpm_ = MAX_RPM_DEFAULT;
     Device_ = Device;
+    rpm_ = 0.0;
 }
 
 Motor::Motor(int id, double max_rpm, std::shared_ptr<SerialInterface> Device)
@@ -22,6 +23,7 @@ Motor::Motor(int id, double max_rpm, std::shared_ptr<SerialInterface> Device)
     id_ = id;
     max_rpm_ = max_rpm; 
     Device_ = Device;
+    rpm_ = 0.0;
 }
 
 void Motor::moveRADPS(double rad_per_sec)
@@ -41,6 +43,7 @@ void Motor::moveRPM(double rpm)
     oss << "CSET," << id_ << "," << std::fixed << std::setprecision(2) << rpm_saturated << std::endl;
     std::string command = oss.str();
     Device_->send(command);
+    rpm_ = rpm_saturated;
 }
 
 // value within [-1,1] works in openloop

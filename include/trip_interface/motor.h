@@ -22,7 +22,6 @@ private:
     double max_rpm_;
     int id_;
 
-    void sendVelocity(); // send command that uses feedback
 public:
     Motor(int id, std::shared_ptr<SerialInterface> Device);
     Motor(int id, double max_rpm, std::shared_ptr<SerialInterface> Device);
@@ -32,6 +31,7 @@ public:
     void moveRADPS(double rad_per_sec);
     void move(double vel_normalized); // value within [-1,1] works in openloop
     double getRPM() const {return rpm_;}
+    double getMaxRPM() const {return max_rpm_;}
     int getID() const {return id_;}
 };
 
