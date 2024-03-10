@@ -85,6 +85,7 @@ if(BUILD_TESTING)
   ament_add_gtest(${PROJECT_NAME}_test 
     test/main.cpp
     test/encoder_unittest.cpp
+    test/serial_interface_unittest.cpp
     test/differential_drive_model_unittest.cpp
   )
   target_include_directories(${PROJECT_NAME}_test PUBLIC
