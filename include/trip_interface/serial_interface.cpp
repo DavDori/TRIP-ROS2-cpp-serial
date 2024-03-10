@@ -91,12 +91,6 @@ void SerialInterface::send(const std::string& message)
         throw std::runtime_error("Error: trying to send message but transmission failed.");
 }
 
-std::string SerialInterface::readFeedback(const std::string &message)
-{
-    send(message);
-    return readLine();
-}
-
 std::string SerialInterface::readLine()
 {
     if(!isConnected())

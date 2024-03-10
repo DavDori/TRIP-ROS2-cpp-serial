@@ -42,14 +42,11 @@ public:
 
     void disconnect();
     void connect(const std::string& port, speed_t baud_rate);
-    std::string readFeedback(const std::string& message);
     std::string readLine();
 
     std::string getLastMessage() const {return last_message_;}
     void send(const std::string& message);
 };
-
-
 
 
 #endif
