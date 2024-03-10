@@ -8,11 +8,11 @@
 #include <stdexcept> // exception handling
 #include "serial_interface.h"
 
-#define ID_RPM_STRING 'V' // string that identifies an encoder measurement
-#define ID_TIME_STRING 'T' // string that identifies a time value
-#define RPM_MESSAGE_OFFSET 1 // offset before the rpm value of the encoder measurement
-#define SEPARATOR_STRING ','
-
+#define SEPARATOR_CHAR ','
+#define ID_RPM_CHAR_START 'V'
+#define ID_RPM_CHAR_END 'T'
+#define ID_PULSE_CHAR_START 'P'
+#define ID_PULSE_CHAR_END 'V'
 class Encoder
 {
 private:
@@ -25,7 +25,9 @@ private:
 
     bool isEncoderMessage(const std::string& message) const;
     void parseEncodersMessage(const std::string& message); 
-    double extractRPM(const std::string& message);
+    double extractRPM(const std::string& token) const;
+    long extractPulseCount(const std::string& token) const;
+    std::string extractDataString(const std::string& token, char start, char end) const;
     void setVelocityRPM(double velocity_rpm);
     void setPulseCount(long count);
 

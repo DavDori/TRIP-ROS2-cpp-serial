@@ -106,32 +106,51 @@ bool Encoder::isEncoderMessage(const std::string& message) const
 
 void Encoder::parseEncodersMessage(const std::string& message)
 {
+    // expected message shape is E0P20V0.00T300,E1P1500V0.00T303,
     std::istringstream input_stream(message);
     std::string token;
     
-    for(size_t i = 0; i < id_; i++)
+    for(size_t i = 0; i <= id_; i++)
     {
-        std::getline(input_stream, token, SEPARATOR_STRING);
+        std::getline(input_stream, token, SEPARATOR_CHAR);
     }
     double velocity_rpm = extractRPM(token);
+    long pulse_count  = extractPulseCount(token);
     setVelocityRPM(velocity_rpm);
+    setPulseCount(pulse_count);
 }
 
-double Encoder::extractRPM(const std::string& message)
+double Encoder::extractRPM(const std::string& token) const
 {
-    // a parsed string should look like: RPM: V10.0T12.5
-    size_t pos_msg = message.find(ID_RPM_STRING);
-    size_t pos_separator = message.find(ID_TIME_STRING);
-
-    if(std::string::npos == pos_msg || std::string::npos == pos_separator)
-    {
-        throw std::runtime_error("Error: expected an ID in encoder velocity message");
-    }
-    // the rpm velocity value is after the string "RPM: " (in this case 5 characters)
-    size_t length_rpm = pos_separator - pos_msg - RPM_MESSAGE_OFFSET;
-    std::string rpm_substring = message.substr(pos_msg + RPM_MESSAGE_OFFSET, length_rpm);
+    // a parsed string should look like: E0P100V0.00T300
+    std::string rpm_data_string = extractDataString(token, ID_RPM_CHAR_START, ID_RPM_CHAR_END);
 
     double velocity_rpm;
-    std::istringstream(rpm_substring) >> velocity_rpm;
+    std::istringstream(rpm_data_string) >> velocity_rpm;
     return velocity_rpm;
+}
+
+long Encoder::extractPulseCount(const std::string& token) const
+{
+    // a parsed string should look like: E0P100V0.00T300
+    std::string pulse_data_string = extractDataString(token, ID_PULSE_CHAR_START, ID_PULSE_CHAR_END);
+
+    long pulse_count;
+    std::istringstream(pulse_data_string) >> pulse_count;
+    return pulse_count;
+}
+
+std::string Encoder::extractDataString(const std::string& token, char start, char end) const
+{
+    size_t pos_start = token.find(start);
+    size_t pos_end = token.find(end);
+
+    if(std::string::npos == pos_start || std::string::npos == pos_end)
+    {
+        throw std::runtime_error("Error: cannot isolate the data within the two characters provided");
+    }
+    // the value is after a character such as "V" (in this case 1 characters)
+    size_t length_data = pos_end - pos_start - 1;
+    std::string data_substring = token.substr(pos_start + 1, length_data);
+    return data_substring;
 }
