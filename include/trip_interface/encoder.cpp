@@ -62,6 +62,11 @@ double Encoder::getSpeedRADpS() const
     return velocity_rpm_ * M_PI / 30.0;
 }
 
+double Encoder::getSpeedDEGpS() const
+{
+    return velocity_rpm_ * 6;
+}
+
 double Encoder::getSpeedRPM() const
 {
     return velocity_rpm_;

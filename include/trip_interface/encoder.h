@@ -37,6 +37,7 @@ public:
     void readMeasurement();
     double getSpeedRPM() const;
     double getSpeedRADpS() const;
+    double getSpeedDEGpS() const;
 
     long getPulseCount() const;
     double getRevolutions() const;
