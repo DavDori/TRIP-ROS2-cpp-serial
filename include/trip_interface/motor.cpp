@@ -38,7 +38,7 @@ void Motor::moveRPM(double rpm)
 {
     double rpm_saturated = saturate(rpm, max_rpm_);
     std::ostringstream oss;
-    oss << "CSET," << id_ << "," << std::fixed << std::setprecision(2) << rpm << std::endl;
+    oss << "CSET," << id_ << "," << std::fixed << std::setprecision(2) << rpm_saturated << std::endl;
     std::string command = oss.str();
     Device_->send(command);
 }
