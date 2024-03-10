@@ -85,6 +85,7 @@ if(BUILD_TESTING)
   ament_add_gtest(${PROJECT_NAME}_test 
     test/main.cpp
     test/encoder_unittest.cpp
+    test/motor_unittest.cpp
     test/serial_interface_unittest.cpp
     test/differential_drive_model_unittest.cpp
   )
@@ -100,6 +101,7 @@ if(BUILD_TESTING)
   )
   target_link_libraries(${PROJECT_NAME}_test serial_interface)
   target_link_libraries(${PROJECT_NAME}_test encoder)
+  target_link_libraries(${PROJECT_NAME}_test motor)
   target_link_libraries(${PROJECT_NAME}_test differential_drive_model)
 endif()
 
