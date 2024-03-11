@@ -7,9 +7,8 @@
 #include <cmath>
 #include "serial_interface.h"
 
-#define RADPS_TO_RPM (30.0 / M_PI)
-#define DEGPS_TO_RPM (1.0/5.0)
-#define CTRL_MOTOR_MAX_VALUE 1000
+#define RADPS_TO_RPM (30.0/M_PI)
+#define DEGPS_TO_RPM (1.0/6.0)
 #define MAX_RPM_DEFAULT 10
 
 double saturate(double val, double max_val);
