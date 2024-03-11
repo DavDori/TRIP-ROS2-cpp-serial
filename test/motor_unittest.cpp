@@ -195,3 +195,157 @@ TEST_F(MotorTests, MoveOutOfRangeNegative)
 
     EXPECT_EQ(std::string(buffer, 14), std::string("MSET,1,-1.000\n"));
 }
+
+
+// Test for moveDEGPS() method when setting in range  and positive values
+TEST_F(MotorTests, MoveInRangePositiveDEGPS) 
+{
+    double in_range_degps = 36.0;
+    char buffer[12] = "";
+
+    motor0_->moveDEGPS(in_range_degps);
+    read(master_, buffer, 12);
+
+    EXPECT_EQ(std::string(buffer, 12), std::string("CSET,0,6.00\n"));
+    EXPECT_EQ(motor0_->getRPM(), 6.0);
+
+    motor1_->moveDEGPS(in_range_degps);
+    read(master_, buffer, 12);
+
+    EXPECT_EQ(std::string(buffer, 12), std::string("CSET,1,6.00\n"));
+    EXPECT_EQ(motor1_->getRPM(), 6.0);
+}
+
+// Test for moveDEGPS() method when setting in range and negative values
+TEST_F(MotorTests, MoveInRangeNegativeDEGPS) 
+{
+    double in_range_degps = -36.0;
+    char buffer[13] = "";
+
+    motor0_->moveDEGPS(in_range_degps);
+    read(master_, buffer, 13);
+
+    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,0,-6.00\n"));
+    EXPECT_EQ(motor0_->getRPM(), -6.0);
+
+    motor1_->moveDEGPS(in_range_degps);
+    read(master_, buffer, 13);
+
+    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,1,-6.00\n"));
+    EXPECT_EQ(motor1_->getRPM(), -6.0);
+}
+
+// Test for moveDEGPS() method when setting out of range and positive values
+TEST_F(MotorTests, MoveOutOfRangePositiveDEGPS) 
+{
+    double out_of_range_degps = 360;
+    char buffer[13] = "";
+
+    motor0_->moveDEGPS(out_of_range_degps);
+    read(master_, buffer, 13);
+
+    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,0,15.00\n"));
+    EXPECT_EQ(motor0_->getRPM(), 15.0);
+
+    motor1_->moveDEGPS(out_of_range_degps);
+    read(master_, buffer, 13);
+
+    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,1,20.50\n"));
+    EXPECT_EQ(motor1_->getRPM(), 20.5);
+}
+
+// Test for moveDEGPS() method when setting out of range and negative values
+TEST_F(MotorTests, MoveOutOfRangeNegativeDEGPS) 
+{
+    double out_of_range_degps = -360;
+    char buffer[14] = "";
+
+    motor0_->moveDEGPS(out_of_range_degps);
+    read(master_, buffer, 14);
+
+    EXPECT_EQ(std::string(buffer, 14), std::string("CSET,0,-15.00\n"));
+    EXPECT_EQ(motor0_->getRPM(), -15.0);
+
+    motor1_->moveDEGPS(out_of_range_degps);
+    read(master_, buffer, 14);
+
+    EXPECT_EQ(std::string(buffer, 14), std::string("CSET,1,-20.50\n"));
+    EXPECT_EQ(motor1_->getRPM(), -20.5);
+}
+
+
+// Test for moveRADPS() method when setting in range  and positive values
+TEST_F(MotorTests, MoveInRangePositiveRADPS) 
+{
+    double in_range_radps = 3.0*M_PI/30.0;
+    char buffer[12] = "";
+
+    motor0_->moveRADPS(in_range_radps);
+    read(master_, buffer, 12);
+
+    EXPECT_EQ(std::string(buffer, 12), std::string("CSET,0,3.00\n"));
+    EXPECT_EQ(motor0_->getRPM(), 3.0);
+
+    motor1_->moveRADPS(in_range_radps);
+    read(master_, buffer, 12);
+
+    EXPECT_EQ(std::string(buffer, 12), std::string("CSET,1,3.00\n"));
+    EXPECT_EQ(motor1_->getRPM(), 3.0);
+}
+
+// Test for moveRADPS() method when setting in range and negative values
+TEST_F(MotorTests, MoveInRangeNegativeRADPS) 
+{
+    double in_range_radps = -0.1*M_PI;
+    char buffer[13] = "";
+
+    motor0_->moveRADPS(in_range_radps);
+    read(master_, buffer, 13);
+
+    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,0,-3.00\n"));
+    EXPECT_EQ(motor0_->getRPM(), -3.0);
+
+    motor1_->moveRADPS(in_range_radps);
+    read(master_, buffer, 13);
+
+    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,1,-3.00\n"));
+    EXPECT_EQ(motor1_->getRPM(), -3.0);
+}
+
+// Test for moveDEGPS() method when setting out of range and positive values
+TEST_F(MotorTests, MoveOutOfRangePositiveRADPS) 
+{
+    double out_of_range_radps = 6;
+    char buffer[13] = "";
+
+    motor0_->moveRADPS(out_of_range_radps);
+    read(master_, buffer, 13);
+
+    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,0,15.00\n"));
+    EXPECT_EQ(motor0_->getRPM(), 15.0);
+
+    motor1_->moveRADPS(out_of_range_radps);
+    read(master_, buffer, 13);
+
+    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,1,20.50\n"));
+    EXPECT_EQ(motor1_->getRPM(), 20.5);
+}
+
+// Test for moveRADPS() method when setting out of range and negative values
+TEST_F(MotorTests, MoveOutOfRangeNegativeRADPS) 
+{
+    double out_of_range_radps = -6;
+    char buffer[14] = "";
+
+    motor0_->moveRADPS(out_of_range_radps);
+    read(master_, buffer, 14);
+
+    EXPECT_EQ(std::string(buffer, 14), std::string("CSET,0,-15.00\n"));
+    EXPECT_EQ(motor0_->getRPM(), -15.0);
+
+    motor1_->moveRADPS(out_of_range_radps);
+    read(master_, buffer, 14);
+
+    EXPECT_EQ(std::string(buffer, 14), std::string("CSET,1,-20.50\n"));
+    EXPECT_EQ(motor1_->getRPM(), -20.5);
+}
