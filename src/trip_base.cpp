@@ -5,7 +5,7 @@
 #include <sstream>
 
 #include "rclcpp/rclcpp.hpp"
-#include "trip_interface/serial_robot_interface.h"
+#include "trip_interface/serial_interface.h"
 #include "trip_interface/encoder.h"
 #include "trip_interface/motor.h"
 
@@ -21,9 +21,9 @@ private:
     rclcpp::Publisher<sensor_msgs::msg::JointState>::SharedPtr enc_pub;
     rclcpp::Subscription<sensor_msgs::msg::JointState>::SharedPtr cmd_sub;
 
-    std::shared_ptr<SerialRobotInterface> Device;
-    std::shared_ptr<Encoder> EncoderLeft;
-    std::shared_ptr<Encoder> EncoderRight;
+    std::shared_ptr<SerialInterface> Device_;
+    std::shared_ptr<Encoder> EncoderLeft_;
+    std::shared_ptr<Encoder> EncoderRight_;
     std::shared_ptr<Motor> MotorLeft;
     std::shared_ptr<Motor> MotorRight;
 
@@ -53,15 +53,12 @@ public:
         this->get_parameter("pulse_per_revolution", ppr);
 
         try{
-            EncoderLeft.reset(new Encoder(0, ppr));
-            EncoderRight.reset(new Encoder(1, ppr));
-            Device.reset(new SerialRobotInterface(
-                port, 
-                baud_rate, 
-                std::vector<std::shared_ptr<Encoder>>{EncoderLeft,EncoderRight}));
+            Device_.reset(new SerialInterface(port, baud_rate));
 
-            MotorLeft.reset(new Motor(0, Device));
-            MotorRight.reset(new Motor(1, Device));
+            EncoderLeft_.reset(new Encoder(0, ppr, Device_));
+            EncoderRight_.reset(new Encoder(1, ppr, Device_));
+            MotorLeft.reset(new Motor(0, Device_));
+            MotorRight.reset(new Motor(1, Device_));
         }
         catch(std::exception& e)
         {
@@ -113,6 +110,11 @@ public:
     {
         try
         {
+            Device_->send("E\n");
+            Device_->readLine();
+
+            EncoderLeft_->readMeasurement();
+            EncoderRight_->readMeasurement();
             sendEncoderMessage();
         }
         catch(std::exception& e)
@@ -127,11 +129,11 @@ public:
 
         msg.name = {"left", "right"};
         msg.position = std::vector<double>{
-            EncoderLeft->getRadiants(),
-            EncoderRight->getRadiants()};
+            EncoderLeft_->getRadiants(),
+            EncoderRight_->getRadiants()};
         msg.velocity = std::vector<double>{
-            EncoderLeft->getSpeedRPM(),
-            EncoderRight->getSpeedRPM()};
+            EncoderLeft_->getSpeedRPM(),
+            EncoderRight_->getSpeedRPM()};
 
         enc_pub->publish(msg);
     }

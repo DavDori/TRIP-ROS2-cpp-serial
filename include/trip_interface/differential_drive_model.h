@@ -28,6 +28,10 @@ public:
     double getRightMotorRotationalSpeed() const;
     double getLinearSpeed() const;
     double getAngularSpeed() const;
+
+    double getGearbox() const {return gearbox_;}
+    double getWheelRadius() const {return wheel_radius_;}
+    double getWheelDistance() const {return wheel_distance_;}
 };
 
 

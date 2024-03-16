@@ -4,7 +4,7 @@
 #include <sstream>
 
 #include "rclcpp/rclcpp.hpp"
-#include "trip_interface/serial_robot_interface.h"
+#include "trip_interface/serial_interface.h"
 #include "trip_interface/encoder.h"
 #include "trip_interface/motor.h"
 #include "trip_interface/differential_drive_model.h"
@@ -23,7 +23,7 @@ private:
     rclcpp::Subscription<geometry_msgs::msg::Twist>::SharedPtr cmd_sub_;
 
 	std::shared_ptr<DifferentialDriveModel> Model_;
-    std::shared_ptr<SerialRobotInterface> Device_;
+    std::shared_ptr<SerialInterface> Device_;
     std::shared_ptr<Encoder> EncoderLeft_;
     std::shared_ptr<Encoder> EncoderRight_;
     std::shared_ptr<Motor> MotorLeft_;
@@ -45,12 +45,12 @@ public:
         int rate_feedback;
 
         this->declare_parameter("port", "/dev/ttyACM0");
-        this->declare_parameter("baudrate", 9600);
+        this->declare_parameter("baudrate", 19200);
         this->declare_parameter("motor_max_rpm", 20.0);
         this->declare_parameter("sprocket_radius_m", 0.035);
         this->declare_parameter("track_distance_m", 0.16);
         this->declare_parameter("gearbox_ratio", 1.0);
-        this->declare_parameter("pub_rate_feedback_Hz", 20);
+        this->declare_parameter("pub_rate_feedback_Hz", 5);
         this->declare_parameter("pulse_per_revolution", 1024.0);
 
         this->get_parameter("port", port);
@@ -63,15 +63,12 @@ public:
         this->get_parameter("pulse_per_revolution", ppr);
 
         try{
-            EncoderLeft_.reset(new Encoder(0, ppr));
-            EncoderRight_.reset(new Encoder(1, ppr));
-            Device_.reset(new SerialRobotInterface(
-                port, 
-                baud_rate, 
-                std::vector<std::shared_ptr<Encoder>>{EncoderLeft_,EncoderRight_}));
+            Device_.reset(new SerialInterface(port, baud_rate));
+            Model_.reset(new DifferentialDriveModel(wheel_radius, wheel_distance, gearbox));
+            EncoderLeft_.reset(new Encoder(0, ppr, Device_));
+            EncoderRight_.reset(new Encoder(1, ppr, Device_));
             MotorLeft_.reset(new Motor(0, Device_));
             MotorRight_.reset(new Motor(1, Device_));
-            Model_.reset(new DifferentialDriveModel(wheel_radius, wheel_distance, 1.0));
         }
         catch(std::exception& e)
         {
@@ -98,14 +95,25 @@ public:
     {
         double lin_vel = msg.linear.x;
         double ang_vel = msg.angular.z;
+
         /*
         convert unicycle velocities [linear, angular] into each 
         motors required speed to achieve that unicycle behaviour
         */
-        Model_->setUnicycleSpeed(lin_vel, ang_vel);
-        double motor_left_speed = Model_->getLeftMotorRotationalSpeed();
-        double motor_right_speed = Model_->getRightMotorRotationalSpeed();
-        setMotorSpeeds(motor_left_speed, motor_right_speed);
+        try
+        {
+            Model_->setUnicycleSpeed(lin_vel, ang_vel);
+
+            double motor_left_speed = Model_->getLeftMotorRotationalSpeed();
+            double motor_right_speed = Model_->getRightMotorRotationalSpeed();
+            setMotorSpeeds(motor_left_speed, motor_right_speed);
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
+        
+        
     }
 
     void setMotorSpeeds(double motor_left_speed, double motor_right_speed)
@@ -117,8 +125,19 @@ public:
 
     void feedbackCallback() 
     {
-        Device_->readEncodersMeasurements();
-        sendEncoderMessage();
+        try
+        {
+            Device_->send("E\n");
+            Device_->readLine();
+
+            EncoderLeft_->readMeasurement();
+            EncoderRight_->readMeasurement();
+            sendEncoderMessage();
+        }
+        catch(std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }   
     }
 
     void sendEncoderMessage()
