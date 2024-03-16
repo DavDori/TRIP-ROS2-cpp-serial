@@ -18,6 +18,7 @@
 #include <termios.h> // POSIX terminal control definitionss
 #include <time.h>   // time calls
 #include <string>
+#include <sys/ioctl.h> // flush
 
 #define INVALID_HANDLE -1
 #define BUFFER_SIZE 256
@@ -43,6 +44,7 @@ public:
     void disconnect();
     void connect(const std::string& port, speed_t baud_rate);
     std::string readLine();
+    void flushReceiver();
 
     std::string getLastMessage() const {return last_message_;}
     void send(const std::string& message);

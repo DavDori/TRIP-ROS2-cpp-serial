@@ -117,4 +117,9 @@ std::string SerialInterface::readLine()
     }
     last_message_ = message;
     return message;
+}}
+
+void SerialInterface::flushReceiver()
+{
+    tcflush(serial_handle_, TCIFLUSH);
 }
