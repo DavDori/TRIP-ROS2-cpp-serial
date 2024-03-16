@@ -45,12 +45,12 @@ public:
         int rate_feedback;
 
         this->declare_parameter("port", "/dev/ttyACM0");
-        this->declare_parameter("baudrate", 9600);
+        this->declare_parameter("baudrate", 19200);
         this->declare_parameter("motor_max_rpm", 20.0);
         this->declare_parameter("sprocket_radius_m", 0.035);
         this->declare_parameter("track_distance_m", 0.16);
         this->declare_parameter("gearbox_ratio", 1.0);
-        this->declare_parameter("pub_rate_feedback_Hz", 20);
+        this->declare_parameter("pub_rate_feedback_Hz", 5);
         this->declare_parameter("pulse_per_revolution", 1024.0);
 
         this->get_parameter("port", port);
