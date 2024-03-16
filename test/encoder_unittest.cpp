@@ -65,7 +65,7 @@ TEST_F(EncoderTests, SetReferencePulseCount)
 // Test for getPulseCount() method
 TEST_F(EncoderTests, GetPulseCount) 
 {
-    write(master_, "E0P1000V5.00T300,E1P500V8.40T303,\n", 33);
+    write(master_, "E0P1000,E1P500,\n", 17);
     device_->readLine();
     enc0_->readMeasurement();
     enc1_->readMeasurement();
@@ -76,7 +76,7 @@ TEST_F(EncoderTests, GetPulseCount)
 // Test for getRevolutions() method
 TEST_F(EncoderTests, GetRevolutions) 
 {
-    write(master_, "E0P1000V5.00T300,E1P500V8.40T303,\n", 33);
+    write(master_, "E0P1000,E1P500,\n", 17);
     device_->readLine();
     enc0_->readMeasurement();
     enc1_->readMeasurement();
@@ -87,7 +87,7 @@ TEST_F(EncoderTests, GetRevolutions)
 // Test for getRadiants() method
 TEST_F(EncoderTests, GetRadiants) 
 {
-    write(master_, "E0P400V5.00T300,E1P500V8.40T303,\n", 33);
+    write(master_, "E0P400,E1P500,\n", 15);
     device_->readLine();
     enc0_->readMeasurement();
     enc1_->readMeasurement();
@@ -98,7 +98,7 @@ TEST_F(EncoderTests, GetRadiants)
 // Test for getDegrees() method
 TEST_F(EncoderTests, GetDegrees) 
 {
-    write(master_, "E0P400V5.00T300,E1P500V8.40T303,\n", 33);
+    write(master_, "E0P400,E1P500,\n", 15);
     device_->readLine();
     enc0_->readMeasurement();
     enc1_->readMeasurement();
@@ -110,7 +110,7 @@ TEST_F(EncoderTests, GetDegrees)
 // Test for getSpeedRPM() method
 TEST_F(EncoderTests, GetSpeedRoundsPerMinute) 
 {
-    write(master_, "E0P400V5.00T300,E1P500V8.40T303,\n", 33);
+    write(master_, "E0V5.00,E1V8.40,\n", 17);
     device_->readLine();
     enc0_->readMeasurement();
     enc1_->readMeasurement();
@@ -121,7 +121,7 @@ TEST_F(EncoderTests, GetSpeedRoundsPerMinute)
 // Test for getSpeedRADpS() method
 TEST_F(EncoderTests, GetSpeedRadiantsPerSecond) 
 {
-    write(master_, "E0P400V5.00T300,E1P500V8.40T303,\n", 33);
+    write(master_, "E0V5.00,E1V8.40,\n", 17);
     device_->readLine();
     enc0_->readMeasurement();
     enc1_->readMeasurement();
@@ -132,7 +132,7 @@ TEST_F(EncoderTests, GetSpeedRadiantsPerSecond)
 // Test for getSpeedDEGpS() method
 TEST_F(EncoderTests, GetSpeedDegreesPerSecond) 
 {
-    write(master_, "E0P400V5.00T300,E1P500V8.40T303,\n", 33);
+    write(master_, "E0V5.00,E1V8.40,\n", 17);
     device_->readLine();
     enc0_->readMeasurement();
     enc1_->readMeasurement();
