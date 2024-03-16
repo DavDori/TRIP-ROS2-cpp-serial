@@ -25,8 +25,12 @@ private:
     double velocity_rpm_;
     int id_;
 
-    bool isEncoderMessage(const std::string& message) const;
-    void parseEncodersMessage(const std::string& message); 
+    bool isEncoderMsg(const std::string& msg) const;
+    bool isVelocityMsg(const std::string& msg) const;
+    bool isPulseMsg(const std::string& msg) const;
+    bool hasSameMsgID(const std::string& msg) const;
+
+    void parseMsg(const std::string& msg); 
     double extractRPM(const std::string& token) const;
     long extractPulseCount(const std::string& token) const;
     std::string extractDataString(const std::string& token, char start, char end) const;

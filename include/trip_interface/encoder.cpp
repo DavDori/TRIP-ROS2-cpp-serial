@@ -82,11 +82,7 @@ void Encoder::readMeasurement()
     try
     {
         std::string msg_in = Device_->getLastMessage();
-        if(isEncoderMessage(msg_in) == false)
-        {
-            throw std::runtime_error("In encoder received unexpected message prefix");
-        }
-        parseEncodersMessage(msg_in);
+        parseMsg(msg_in);
     }
     catch(std::exception& e)
     {
@@ -94,37 +90,75 @@ void Encoder::readMeasurement()
     }   
 }
 
-bool Encoder::isEncoderMessage(const std::string& message) const
+void Encoder::parseMsg(const std::string& msg)
 {
-    if(0 == message.size())
+    // expected message with shape E0V0.00,E1V0.00,
+    // expected message with shape E0P0.00,E1P10.00,
+    std::istringstream input_stream(msg);
+    for(std::string token;
+        std::getline(input_stream, token, SEPARATOR_CHAR);)
+    {
+        if(isEncoderMsg(token) == false) {continue;}
+        if(hasSameMsgID(token) == false) {continue;}
+        if(isVelocityMsg(token))
+        {
+            double velocity_rpm = extractRPM(token);
+            setVelocityRPM(velocity_rpm);
+        }
+        else if(isPulseMsg(token))
+        {
+            long pulse_count  = extractPulseCount(token);
+            setPulseCount(pulse_count);
+        }
+    }
+}
+
+
+bool Encoder::isEncoderMsg(const std::string& msg) const
+{
+    if(0 == msg.size())
     {
         throw std::runtime_error("Encoder message has size 0");               
     }
-    char id = message.at(0);
-    return 'E' == id; // message information are about encoder
+    char id = msg.at(0);    
+    return ENC_CHAR_ID == id; // message information are about encoder
 }
 
-void Encoder::parseEncodersMessage(const std::string& message)
+
+bool Encoder::isVelocityMsg(const std::string& msg) const
 {
-    // expected message shape is E0P20V0.00T300,E1P1500V0.00T303,
-    std::istringstream input_stream(message);
-    std::string token;
-    
-    for(int i = 0; i <= id_; i++)
+    if(msg.size() < 3)
     {
-        std::getline(input_stream, token, SEPARATOR_CHAR);
+        return false;              
     }
-    double velocity_rpm = extractRPM(token);
-    // long pulse_count  = extractPulseCount(token);
-    setVelocityRPM(velocity_rpm);
-    // setPulseCount(pulse_count);
+    char id = msg.at(2);    
+    return ID_RPM_CHAR_START == id; // message information are about encoder
+}
+
+bool Encoder::isPulseMsg(const std::string& msg) const
+{
+    if(msg.size() < 3)
+    {
+        return false;              
+    }
+    char id = msg.at(2);
+    return ID_PULSE_CHAR_START == id; // message information are about encoder velocity
+}
+
+bool Encoder::hasSameMsgID(const std::string& msg) const
+{
+    if(msg.size() < 2)
+    {
+        return false;              
+    }
+    int id = msg.at(1) - '0';
+    return id_ == id; // message information are about this encoder
 }
 
 double Encoder::extractRPM(const std::string& token) const
 {
-    // a parsed string should look like: E0P100V0.00T300
+    // a parsed string should look like: E0P100V0.00
     std::string rpm_data_string = extractDataString(token, ID_RPM_CHAR_START, ID_RPM_CHAR_END);
-
     double velocity_rpm;
     std::istringstream(rpm_data_string) >> velocity_rpm;
     return velocity_rpm;
@@ -132,7 +166,7 @@ double Encoder::extractRPM(const std::string& token) const
 
 long Encoder::extractPulseCount(const std::string& token) const
 {
-    // a parsed string should look like: E0P100V0.00T300
+    // a parsed string should look like: E0P100V0.00
     std::string pulse_data_string = extractDataString(token, ID_PULSE_CHAR_START, ID_PULSE_CHAR_END);
 
     long pulse_count;
