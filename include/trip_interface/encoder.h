@@ -10,9 +10,10 @@
 
 #define SEPARATOR_CHAR ','
 #define ID_RPM_CHAR_START 'V'
-#define ID_RPM_CHAR_END 'T' //rpm as last value
+#define ID_RPM_CHAR_END '*' //rpm as last value
 #define ID_PULSE_CHAR_START 'P'
-#define ID_PULSE_CHAR_END 'V'
+#define ID_PULSE_CHAR_END '*'
+#define ENC_CHAR_ID 'E'
 
 class Encoder
 {
