@@ -110,14 +110,14 @@ void Encoder::parseEncodersMessage(const std::string& message)
     std::istringstream input_stream(message);
     std::string token;
     
-    for(size_t i = 0; i <= id_; i++)
+    for(int i = 0; i <= id_; i++)
     {
         std::getline(input_stream, token, SEPARATOR_CHAR);
     }
     double velocity_rpm = extractRPM(token);
-    long pulse_count  = extractPulseCount(token);
+    // long pulse_count  = extractPulseCount(token);
     setVelocityRPM(velocity_rpm);
-    setPulseCount(pulse_count);
+    // setPulseCount(pulse_count);
 }
 
 double Encoder::extractRPM(const std::string& token) const
@@ -143,7 +143,12 @@ long Encoder::extractPulseCount(const std::string& token) const
 std::string Encoder::extractDataString(const std::string& token, char start, char end) const
 {
     size_t pos_start = token.find(start);
-    size_t pos_end = token.find(end);
+    size_t pos_end;
+
+    if('*' == end) //read untill the end of token
+        pos_end = token.length();
+    else
+        pos_end = token.find(end);
 
     if(std::string::npos == pos_start || std::string::npos == pos_end)
     {
