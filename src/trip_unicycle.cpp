@@ -128,6 +128,8 @@ public:
         try
         {
             Device_->send("E\n");
+            Device_->readLine();
+
             EncoderLeft_->readMeasurement();
             EncoderRight_->readMeasurement();
             sendEncoderMessage();
