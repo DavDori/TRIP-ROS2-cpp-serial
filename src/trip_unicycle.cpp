@@ -64,7 +64,7 @@ public:
 
         try{
             Device_.reset(new SerialInterface(port, baud_rate));
-            
+            Model_.reset(new DifferentialDriveModel(wheel_radius, wheel_distance, gearbox));
             EncoderLeft_.reset(new Encoder(0, ppr, Device_));
             EncoderRight_.reset(new Encoder(1, ppr, Device_));
             MotorLeft_.reset(new Motor(0, Device_));
