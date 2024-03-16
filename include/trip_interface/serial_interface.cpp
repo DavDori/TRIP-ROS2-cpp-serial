@@ -21,6 +21,7 @@ void SerialInterface::connect(const std::string& port, speed_t baud_rate) {
     {
         throw std::runtime_error("Error: cannot open Serial Port!");
     }
+
     initSerialPort();
 }
 
@@ -61,9 +62,11 @@ void SerialInterface::initSerialPort()
 
 
     /* Flush the Input buffer and set the attribute NOW without waiting for Data to Complete*/
-    tcflush(serial_handle_, TCIFLUSH);
+    //flushReceiver();
+    ioctl(serial_handle_, TCFLSH, 2); // flush both
     // write port configuration to driver
     tcsetattr(serial_handle_, TCSANOW, &tty);
+
 }
 
 void SerialInterface::disconnect() {
@@ -94,7 +97,7 @@ void SerialInterface::send(const std::string& message)
 std::string SerialInterface::readLine()
 {
     if(!isConnected())
-        throw std::runtime_error("Error: trying to send message but serial port is not open.");
+        throw std::runtime_error("Error: trying to read message but serial port is not open.");
     char c;
     std::string message = "";
     int bytes_read;
@@ -115,9 +118,11 @@ std::string SerialInterface::readLine()
         else
             throw std::runtime_error("Warning: trying to send message but transmission failed.");
     }
-    last_message_ = message;
+    if(message.size() != 0)
+        last_message_ = message;
+    ioctl(serial_handle_, TCFLSH, 0); // flush this
     return message;
-}}
+}
 
 void SerialInterface::flushReceiver()
 {
