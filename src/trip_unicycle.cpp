@@ -95,14 +95,25 @@ public:
     {
         double lin_vel = msg.linear.x;
         double ang_vel = msg.angular.z;
+
         /*
         convert unicycle velocities [linear, angular] into each 
         motors required speed to achieve that unicycle behaviour
         */
-        Model_->setUnicycleSpeed(lin_vel, ang_vel);
-        double motor_left_speed = Model_->getLeftMotorRotationalSpeed();
-        double motor_right_speed = Model_->getRightMotorRotationalSpeed();
-        setMotorSpeeds(motor_left_speed, motor_right_speed);
+        try
+        {
+            Model_->setUnicycleSpeed(lin_vel, ang_vel);
+
+            double motor_left_speed = Model_->getLeftMotorRotationalSpeed();
+            double motor_right_speed = Model_->getRightMotorRotationalSpeed();
+            setMotorSpeeds(motor_left_speed, motor_right_speed);
+        }
+        catch(const std::exception& e)
+        {
+            std::cout << e.what() << std::endl;
+        }
+        
+        
     }
 
     void setMotorSpeeds(double motor_left_speed, double motor_right_speed)
