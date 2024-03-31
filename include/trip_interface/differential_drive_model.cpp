@@ -11,7 +11,7 @@ DifferentialDriveModel::DifferentialDriveModel(double wheel_radius, double wheel
     wheel_distance_ = wheel_distance;
     wheel_radius_ = wheel_radius;
     gearbox_ = gearbox;
-    setUnicycleSpeed(0.0,0.0);
+    setUnicycleVel(0.0,0.0);
 }
 
 DifferentialDriveModel::DifferentialDriveModel(double wheel_radius, double wheel_distance)
@@ -19,43 +19,43 @@ DifferentialDriveModel::DifferentialDriveModel(double wheel_radius, double wheel
     DifferentialDriveModel(wheel_radius, wheel_distance, 1.0);
 }
 
-void DifferentialDriveModel::setUnicycleSpeed(double lin_speed, double ang_speed)
+void DifferentialDriveModel::setUnicycleVel(double lin_vel, double ang_vel)
 {
-    linear_speed_ = lin_speed;
-    angular_speed_ = ang_speed;
+    linear_vel_ = lin_vel;
+    angular_vel_ = ang_vel;
 }
 
-void DifferentialDriveModel::setDifferentialSpeed(double left_wheel_speed, double right_wheel_speed)
+void DifferentialDriveModel::setDifferentialVel(double left_wheel_vel, double right_wheel_vel)
 {
-    linear_speed_ = 0.5*wheel_radius_*(left_wheel_speed + right_wheel_speed);
-    angular_speed_ = wheel_radius_*(-left_wheel_speed + right_wheel_speed) / wheel_distance_;
+    linear_vel_ = 0.5*wheel_radius_*(left_wheel_vel + right_wheel_vel);
+    angular_vel_ = wheel_radius_*(-left_wheel_vel + right_wheel_vel) / wheel_distance_;
 }
 
-double DifferentialDriveModel::getLeftWheelRotationalSpeed() const
+double DifferentialDriveModel::getLeftWheelRotationalVel() const
 {
-    double wheel_speed = linear_speed_ - angular_speed_ * (0.5*wheel_distance_);
-    return wheel_speed / wheel_radius_;
+    double wheel_vel = linear_vel_ - angular_vel_ * (0.5*wheel_distance_);
+    return wheel_vel / wheel_radius_;
 }
-double DifferentialDriveModel::getRightWheelRotationalSpeed() const
+double DifferentialDriveModel::getRightWheelRotationalVel() const
 {
-    double wheel_speed = linear_speed_ + angular_speed_ * (0.5*wheel_distance_);
-    return wheel_speed / wheel_radius_;
-}
-
-double DifferentialDriveModel::getLeftMotorRotationalSpeed() const
-{
-    return getLeftWheelRotationalSpeed() * gearbox_;
-}
-double DifferentialDriveModel::getRightMotorRotationalSpeed() const
-{
-    return getRightWheelRotationalSpeed() * gearbox_;
+    double wheel_vel = linear_vel_ + angular_vel_ * (0.5*wheel_distance_);
+    return wheel_vel / wheel_radius_;
 }
 
-double DifferentialDriveModel::getLinearSpeed() const
+double DifferentialDriveModel::getLeftMotorRotationalVel() const
 {
-    return linear_speed_;
+    return getLeftWheelRotationalVel() * gearbox_;
 }
-double DifferentialDriveModel::getAngularSpeed() const
+double DifferentialDriveModel::getRightMotorRotationalVel() const
 {
-    return angular_speed_;
+    return getRightWheelRotationalVel() * gearbox_;
+}
+
+double DifferentialDriveModel::getLinearVel() const
+{
+    return linear_vel_;
+}
+double DifferentialDriveModel::getAngularVel() const
+{
+    return angular_vel_;
 }
