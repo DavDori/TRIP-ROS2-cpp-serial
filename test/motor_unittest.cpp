@@ -1,351 +1,100 @@
 #include "trip_interface/motor.h"
-#include "trip_interface/serial_interface.h"
-#include <pty.h>
 #include <gtest/gtest.h>
-#include <memory>
-
-class MotorTests : public ::testing::Test 
-{
-protected:
-    virtual void SetUp() 
-    {
-        if (openpty(&master_, &slave_, name_, NULL, NULL) == -1) 
-        {
-            perror("openpty");
-            exit(127);
-        }
-
-        ASSERT_TRUE(std::string(name_).length() > 0);
-        ASSERT_TRUE(master_ > 0);
-        ASSERT_TRUE(slave_ > 0);
-
-        device_ = std::make_shared<SerialInterface>(std::string(name_), 9600);
-        motor0_ = std::make_shared<Motor>(0, 15.0, device_);
-        motor1_ = std::make_shared<Motor>(1, 20.5, device_);
-    }
-
-    virtual void TearDown() 
-    {
-        device_->disconnect();
-    }
-
-    std::shared_ptr<SerialInterface> device_;
-    std::shared_ptr<Motor> motor0_;
-    std::shared_ptr<Motor> motor1_;
-
-    int master_;
-    int slave_;
-    char name_[100];
-};
 
 
+// Define some example values for testing
+constexpr double MAX_RPM = 5000.0;
+constexpr double TORQUE_CONSTANT = 0.002;
 
-// Test for Encoder() constructor
-TEST_F(MotorTests, Constructor)
-{
-    EXPECT_EQ(motor0_->getID(), 0);
-    EXPECT_EQ(motor1_->getID(), 1);
-    EXPECT_EQ(motor0_->getMaxRPM(), 15.0);
-    EXPECT_EQ(motor1_->getMaxRPM(), 20.5);
+TEST(MotorTest, UnitConversion) {
+    double rpm = convert_vel_from_rpm(100.0, RPM);
+    double radps = convert_vel_from_rpm(100.0, RADPS);
+    double degps = convert_vel_from_rpm(100.0, DEGPS);
+    EXPECT_EQ(rpm, 100.0);
+    EXPECT_NEAR(radps, 10.4719755, 0.000001);
+    EXPECT_NEAR(degps, 600.0, 0.000001);
+
+    rpm = convert_vel_from_rpm(convert_vel_into_rpm(100.0, RPM), RPM);
+    radps = convert_vel_from_rpm(convert_vel_into_rpm(100.0, RADPS), RADPS);
+    degps = convert_vel_from_rpm(convert_vel_into_rpm(100.0, DEGPS), DEGPS);
+    EXPECT_NEAR(rpm, 100.0, 0.000001);
+    EXPECT_NEAR(radps, 100.0, 0.000001);
+    EXPECT_NEAR(degps, 100.0, 0.000001);
 }
 
-// Test for moveRPM() method when setting in range  and positive values
-TEST_F(MotorTests, MoveInRangePositiveRPM) 
-{
-    double in_range_rpm = 5.23;
-    char buffer[12] = "";
+// Test case for constructor with mode, torque_constant, and max_rpm
+TEST(MotorTest, ConstructorWithParameters) {
+    Motor motor(VELOCITY, TORQUE_CONSTANT, MAX_RPM);
 
-    motor0_->moveRPM(in_range_rpm);
-    read(master_, buffer, 12);
-
-    EXPECT_EQ(std::string(buffer, 12), std::string("CSET,0,5.23\n"));
-    EXPECT_EQ(motor0_->getRPM(), 5.23);
-
-    motor1_->moveRPM(in_range_rpm);
-    read(master_, buffer, 12);
-
-    EXPECT_EQ(std::string(buffer, 12), std::string("CSET,1,5.23\n"));
-    EXPECT_EQ(motor1_->getRPM(), 5.23);
+    EXPECT_EQ(motor.getActualVelocity(RPM), 0.0);
+    EXPECT_EQ(motor.getDesiredVelocity(RPM), 0.0);
+    EXPECT_EQ(motor.getActualTorque(), 0.0);
+    EXPECT_EQ(motor.getDesiredTorque(), 0.0);
+    EXPECT_EQ(motor.getActualCurrent(), 0.0);
+    EXPECT_EQ(motor.getDesiredCurrent(), 0.0);
+    EXPECT_FALSE(motor.isTorqueMode());
+    EXPECT_TRUE(motor.isVelocityMode());
 }
 
-// Test for moveRPM() method when setting in range and negative values
-TEST_F(MotorTests, MoveInRangeNegativeRPM) 
-{
-    double in_range_rpm = -5.23;
-    char buffer[13] = "";
+// Test case for constructor with max_rpm only
+TEST(MotorTest, ConstructorWithMaxRpmOnly) {
+    Motor motor(MAX_RPM);
 
-    motor0_->moveRPM(in_range_rpm);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,0,-5.23\n"));
-    EXPECT_EQ(motor0_->getRPM(), -5.23);
-
-    motor1_->moveRPM(in_range_rpm);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,1,-5.23\n"));
-    EXPECT_EQ(motor1_->getRPM(), -5.23);
+    EXPECT_EQ(motor.getActualVelocity(RPM), 0.0);
+    EXPECT_EQ(motor.getDesiredVelocity(RPM), 0.0);
+    EXPECT_EQ(motor.getActualTorque(), 0.0);
+    EXPECT_EQ(motor.getDesiredTorque(), 0.0);
+    EXPECT_EQ(motor.getActualCurrent(), 0.0);
+    EXPECT_EQ(motor.getDesiredCurrent(), 0.0);
+    EXPECT_TRUE(motor.isVelocityMode());
+    EXPECT_FALSE(motor.isTorqueMode());
 }
 
-// Test for moveRPM() method when setting out of range and positive values
-TEST_F(MotorTests, MoveOutOfRangePositiveRPM) 
-{
-    double out_of_range_rpm = 1000;
-    char buffer[13] = "";
-
-    motor0_->moveRPM(out_of_range_rpm);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,0,15.00\n"));
-    EXPECT_EQ(motor0_->getRPM(), 15.0);
-
-    motor1_->moveRPM(out_of_range_rpm);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,1,20.50\n"));
-    EXPECT_EQ(motor1_->getRPM(), 20.5);
+// Test case for setting and getting actual velocity
+TEST(MotorTest, SetAndGetActualVelocity) {
+    Motor motor(MAX_RPM);
+    motor.setActualVelocity(100.0, RPM);
+    EXPECT_EQ(motor.getActualVelocity(RPM), 100.0);
+    // greater than max rpm, but it should not affect since it
+    // is the reading, not the setpoint
+    motor.setActualVelocity(10000.0, RPM);
+    EXPECT_EQ(motor.getActualVelocity(RPM), 10000.0);
 }
 
-// Test for moveRPM() method when setting out of range and negative values
-TEST_F(MotorTests, MoveOutOfRangeNegativeRPM) 
-{
-    double out_of_range_rpm = -1000;
-    char buffer[14] = "";
+// Test case for setting and getting desired velocity
+TEST(MotorTest, SetAndGetDesiredVelocity) {
+    Motor motor(MAX_RPM);
+    motor.setDesiredVelocity(200.0, RPM);
+    EXPECT_EQ(motor.getDesiredVelocity(RPM), 200.0);
 
-    motor0_->moveRPM(out_of_range_rpm);
-    read(master_, buffer, 14);
-
-    EXPECT_EQ(std::string(buffer, 14), std::string("CSET,0,-15.00\n"));
-    EXPECT_EQ(motor0_->getRPM(), -15.0);
-
-    motor1_->moveRPM(out_of_range_rpm);
-    read(master_, buffer, 14);
-
-    EXPECT_EQ(std::string(buffer, 14), std::string("CSET,1,-20.50\n"));
-    EXPECT_EQ(motor1_->getRPM(), -20.5);
+    motor.setDesiredVelocity(20000.0, RPM);
+    EXPECT_EQ(motor.getDesiredVelocity(RPM), MAX_RPM);
 }
 
-
-// no feedback control
-
-// Test for move() method when setting in range  and positive values
-TEST_F(MotorTests, MoveInRangePositive) 
-{
-    double in_range = 0.9;
-    char buffer[13] = "";
-
-    motor0_->move(in_range);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("MSET,0,0.900\n"));
-
-    motor1_->move(in_range);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("MSET,1,0.900\n"));
+// Test case for setting and getting actual current
+TEST(MotorTest, SetAndGetActualCurrent) {
+    Motor motor(TORQUE, TORQUE_CONSTANT, MAX_RPM);
+    motor.setActualCurrent(2.0);
+    EXPECT_EQ(motor.getActualCurrent(), 2.0);
 }
 
-// Test for move() method when setting in range and negative values
-TEST_F(MotorTests, MoveInRangeNegative) 
-{
-    double in_range = -0.9;
-    char buffer[14] = "";
-
-    motor0_->move(in_range);
-    read(master_, buffer, 14);
-
-    EXPECT_EQ(std::string(buffer, 14), std::string("MSET,0,-0.900\n"));
-
-    motor1_->move(in_range);
-    read(master_, buffer, 14);
-
-    EXPECT_EQ(std::string(buffer, 14), std::string("MSET,1,-0.900\n"));
+// Test case for setting and getting desired current
+TEST(MotorTest, SetAndGetDesiredCurrent) {
+    Motor motor(TORQUE, TORQUE_CONSTANT, MAX_RPM);
+    motor.setDesiredCurrent(2.0);
+    EXPECT_EQ(motor.getDesiredCurrent(), 2.0);
 }
 
-// Test for move() method when setting out of range and positive values
-TEST_F(MotorTests, MoveOutOfRangePositive) 
-{
-    double out_of_range = 10;
-    char buffer[13] = "";
-
-    motor0_->move(out_of_range);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("MSET,0,1.000\n"));
-
-    motor1_->move(out_of_range);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("MSET,1,1.000\n"));
+// Test case for setting and getting actual Torque
+TEST(MotorTest, SetAndGetActualTorque) {
+    Motor motor(TORQUE, TORQUE_CONSTANT, MAX_RPM);
+    motor.setActualTorque(0.02);
+    EXPECT_EQ(motor.getActualTorque(), 0.02);
 }
 
-// Test for move() method when setting out of range and negative values
-TEST_F(MotorTests, MoveOutOfRangeNegative) 
-{
-    double out_of_range = -1000;
-    char buffer[14] = "";
-
-    motor0_->move(out_of_range);
-    read(master_, buffer, 14);
-
-    EXPECT_EQ(std::string(buffer, 14), std::string("MSET,0,-1.000\n"));
-
-    motor1_->move(out_of_range);
-    read(master_, buffer, 14);
-
-    EXPECT_EQ(std::string(buffer, 14), std::string("MSET,1,-1.000\n"));
-}
-
-
-// Test for moveDEGPS() method when setting in range  and positive values
-TEST_F(MotorTests, MoveInRangePositiveDEGPS) 
-{
-    double in_range_degps = 36.0;
-    char buffer[12] = "";
-
-    motor0_->moveDEGPS(in_range_degps);
-    read(master_, buffer, 12);
-
-    EXPECT_EQ(std::string(buffer, 12), std::string("CSET,0,6.00\n"));
-    EXPECT_EQ(motor0_->getRPM(), 6.0);
-
-    motor1_->moveDEGPS(in_range_degps);
-    read(master_, buffer, 12);
-
-    EXPECT_EQ(std::string(buffer, 12), std::string("CSET,1,6.00\n"));
-    EXPECT_EQ(motor1_->getRPM(), 6.0);
-}
-
-// Test for moveDEGPS() method when setting in range and negative values
-TEST_F(MotorTests, MoveInRangeNegativeDEGPS) 
-{
-    double in_range_degps = -36.0;
-    char buffer[13] = "";
-
-    motor0_->moveDEGPS(in_range_degps);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,0,-6.00\n"));
-    EXPECT_EQ(motor0_->getRPM(), -6.0);
-
-    motor1_->moveDEGPS(in_range_degps);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,1,-6.00\n"));
-    EXPECT_EQ(motor1_->getRPM(), -6.0);
-}
-
-// Test for moveDEGPS() method when setting out of range and positive values
-TEST_F(MotorTests, MoveOutOfRangePositiveDEGPS) 
-{
-    double out_of_range_degps = 360;
-    char buffer[13] = "";
-
-    motor0_->moveDEGPS(out_of_range_degps);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,0,15.00\n"));
-    EXPECT_EQ(motor0_->getRPM(), 15.0);
-
-    motor1_->moveDEGPS(out_of_range_degps);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,1,20.50\n"));
-    EXPECT_EQ(motor1_->getRPM(), 20.5);
-}
-
-// Test for moveDEGPS() method when setting out of range and negative values
-TEST_F(MotorTests, MoveOutOfRangeNegativeDEGPS) 
-{
-    double out_of_range_degps = -360;
-    char buffer[14] = "";
-
-    motor0_->moveDEGPS(out_of_range_degps);
-    read(master_, buffer, 14);
-
-    EXPECT_EQ(std::string(buffer, 14), std::string("CSET,0,-15.00\n"));
-    EXPECT_EQ(motor0_->getRPM(), -15.0);
-
-    motor1_->moveDEGPS(out_of_range_degps);
-    read(master_, buffer, 14);
-
-    EXPECT_EQ(std::string(buffer, 14), std::string("CSET,1,-20.50\n"));
-    EXPECT_EQ(motor1_->getRPM(), -20.5);
-}
-
-
-// Test for moveRADPS() method when setting in range  and positive values
-TEST_F(MotorTests, MoveInRangePositiveRADPS) 
-{
-    double in_range_radps = 3.0*M_PI/30.0;
-    char buffer[12] = "";
-
-    motor0_->moveRADPS(in_range_radps);
-    read(master_, buffer, 12);
-
-    EXPECT_EQ(std::string(buffer, 12), std::string("CSET,0,3.00\n"));
-    EXPECT_EQ(motor0_->getRPM(), 3.0);
-
-    motor1_->moveRADPS(in_range_radps);
-    read(master_, buffer, 12);
-
-    EXPECT_EQ(std::string(buffer, 12), std::string("CSET,1,3.00\n"));
-    EXPECT_EQ(motor1_->getRPM(), 3.0);
-}
-
-// Test for moveRADPS() method when setting in range and negative values
-TEST_F(MotorTests, MoveInRangeNegativeRADPS) 
-{
-    double in_range_radps = -0.1*M_PI;
-    char buffer[13] = "";
-
-    motor0_->moveRADPS(in_range_radps);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,0,-3.00\n"));
-    EXPECT_EQ(motor0_->getRPM(), -3.0);
-
-    motor1_->moveRADPS(in_range_radps);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,1,-3.00\n"));
-    EXPECT_EQ(motor1_->getRPM(), -3.0);
-}
-
-// Test for moveDEGPS() method when setting out of range and positive values
-TEST_F(MotorTests, MoveOutOfRangePositiveRADPS) 
-{
-    double out_of_range_radps = 6;
-    char buffer[13] = "";
-
-    motor0_->moveRADPS(out_of_range_radps);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,0,15.00\n"));
-    EXPECT_EQ(motor0_->getRPM(), 15.0);
-
-    motor1_->moveRADPS(out_of_range_radps);
-    read(master_, buffer, 13);
-
-    EXPECT_EQ(std::string(buffer, 13), std::string("CSET,1,20.50\n"));
-    EXPECT_EQ(motor1_->getRPM(), 20.5);
-}
-
-// Test for moveRADPS() method when setting out of range and negative values
-TEST_F(MotorTests, MoveOutOfRangeNegativeRADPS) 
-{
-    double out_of_range_radps = -6;
-    char buffer[14] = "";
-
-    motor0_->moveRADPS(out_of_range_radps);
-    read(master_, buffer, 14);
-
-    EXPECT_EQ(std::string(buffer, 14), std::string("CSET,0,-15.00\n"));
-    EXPECT_EQ(motor0_->getRPM(), -15.0);
-
-    motor1_->moveRADPS(out_of_range_radps);
-    read(master_, buffer, 14);
-
-    EXPECT_EQ(std::string(buffer, 14), std::string("CSET,1,-20.50\n"));
-    EXPECT_EQ(motor1_->getRPM(), -20.5);
+// Test case for setting and getting desired Torque
+TEST(MotorTest, SetAndGetDesiredTorque) {
+    Motor motor(TORQUE, 2, MAX_RPM);
+    motor.setDesiredTorque(0.02);
+    EXPECT_EQ(motor.getDesiredTorque(), 0.02);
 }

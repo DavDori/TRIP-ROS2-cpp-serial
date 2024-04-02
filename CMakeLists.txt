@@ -87,21 +87,22 @@ if(BUILD_TESTING)
     test/encoder_unittest.cpp
     test/motor_unittest.cpp
     test/differential_drive_model_unittest.cpp
+    test/trip_serial_interface_unittest.cpp
   )
   target_include_directories(${PROJECT_NAME}_test PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:include>
   )
   ament_target_dependencies(${PROJECT_NAME}_test 
-    rclcpp 
-    geometry_msgs 
+    rclcpp
+    geometry_msgs
     sensor_msgs
     std_msgs
   )
-  target_link_libraries(${PROJECT_NAME}_test trip_serial_interface)
   target_link_libraries(${PROJECT_NAME}_test encoder)
   target_link_libraries(${PROJECT_NAME}_test motor)
   target_link_libraries(${PROJECT_NAME}_test differential_drive_model)
+  target_link_libraries(${PROJECT_NAME}_test trip_serial_interface)
 endif()
 
 
