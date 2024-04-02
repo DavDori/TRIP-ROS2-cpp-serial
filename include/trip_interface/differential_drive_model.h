@@ -12,26 +12,26 @@ class DifferentialDriveModel
 private:
     double wheel_radius_;
     double wheel_distance_;
-    double linear_speed_;
-    double angular_speed_;
+    double linear_vel_;
+    double angular_vel_;
     double gearbox_;
 
 public:
     DifferentialDriveModel(double wheel_radius, double wheel_distance, double gearbox);
     DifferentialDriveModel(double wheel_radius, double wheel_distance);
 
-    void setUnicycleSpeed(double lin_speed, double ang_speed);
-    void setDifferentialSpeed(double left_wheel_speed, double right_wheel_speed);
-    double getLeftWheelRotationalSpeed() const;
-    double getRightWheelRotationalSpeed() const;
-    double getLeftMotorRotationalSpeed() const;
-    double getRightMotorRotationalSpeed() const;
-    double getLinearSpeed() const;
-    double getAngularSpeed() const;
+    void setUnicycleVel(double lin_vel, double ang_vel);
+    void setDifferentialVel(double left_wheel_vel, double right_wheel_vel);
+    double getLeftWheelRotationalVel() const;
+    double getRightWheelRotationalVel() const;
+    double getLeftMotorRotationalVel() const;
+    double getRightMotorRotationalVel() const;
+    double getLinearVel() const;
+    double getAngularVel() const;
 
-    double getGearbox() const {return gearbox_;}
     double getWheelRadius() const {return wheel_radius_;}
     double getWheelDistance() const {return wheel_distance_;}
+    double getGearbox() const {return gearbox_;}
 };
 
 
