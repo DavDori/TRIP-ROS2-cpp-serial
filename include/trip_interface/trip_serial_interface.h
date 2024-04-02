@@ -16,7 +16,6 @@
 #define ID_PULSE_CHAR_END '*'
 #define ENC_CHAR_ID 'E'
 
-typedef enum Position {LEFT, RIGHT} Position;
 std::vector<double> extractEncodersVelocity(const std::string& msg);
 std::vector<long> extractEncodersPulses(const std::string& msg);
 

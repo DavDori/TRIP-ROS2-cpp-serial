@@ -15,8 +15,6 @@ void Motor::setDesiredVelocity(double velocity, vel_unit_t unit)
         throw std::logic_error("Error: cannot control velocity when in Troque Control Mode.\n");
     }
     vel_sp_rpm_ = convert_vel_into_rpm(velocity, unit);
-    std::cout << "motor rpm" << std::endl;
-    std::cout << vel_sp_rpm_ << std::endl;
 }
 
 
