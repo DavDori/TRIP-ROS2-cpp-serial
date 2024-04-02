@@ -29,9 +29,9 @@ public:
     double getLinearVel() const;
     double getAngularVel() const;
 
-    double getGearbox() const {return gearbox_;}
     double getWheelRadius() const {return wheel_radius_;}
     double getWheelDistance() const {return wheel_distance_;}
+    double getGearbox() const {return gearbox_;}
 };
 
 

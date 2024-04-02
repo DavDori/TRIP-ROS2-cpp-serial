@@ -1,22 +1,25 @@
 #include "differential_drive_model.h"
 
 DifferentialDriveModel::DifferentialDriveModel(double wheel_radius, double wheel_distance, double gearbox)
+    : wheel_radius_(wheel_radius), wheel_distance_(wheel_distance), 
+      linear_vel_(0.0), angular_vel_(0.0), gearbox_(gearbox)
 {
-    if(0.0 == wheel_radius)
-        throw std::invalid_argument("Error: wheel radius cannot be 0!");
-    if(0.0 == gearbox)
-        throw std::invalid_argument("Error: gearbox ratio cannot be 0!");
-    if(0.0 == wheel_distance)
-        throw std::invalid_argument("Error: distance between  wheels cannot be 0!");
-    wheel_distance_ = wheel_distance;
-    wheel_radius_ = wheel_radius;
-    gearbox_ = gearbox;
-    setUnicycleVel(0.0,0.0);
+    if(wheel_radius <= 0.0)
+        throw std::invalid_argument("Error: wheel radius cannot be less than 0!");
+    if(gearbox <= 0.0)
+        throw std::invalid_argument("Error: gearbox ratio cannot be less than 0!");
+    if(wheel_distance <= 0.0)
+        throw std::invalid_argument("Error: distance between  wheels cannot be less than 0!");
 }
 
 DifferentialDriveModel::DifferentialDriveModel(double wheel_radius, double wheel_distance)
+    : wheel_radius_(wheel_radius), wheel_distance_(wheel_distance), 
+      linear_vel_(0.0), angular_vel_(0.0), gearbox_(1.0)
 {
-    DifferentialDriveModel(wheel_radius, wheel_distance, 1.0);
+    if(wheel_radius <= 0.0)
+        throw std::invalid_argument("Error: wheel radius cannot be less than 0!");
+    if(wheel_distance <= 0.0)
+        throw std::invalid_argument("Error: distance between  wheels cannot be less than 0!");
 }
 
 void DifferentialDriveModel::setUnicycleVel(double lin_vel, double ang_vel)
