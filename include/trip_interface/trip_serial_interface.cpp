@@ -36,6 +36,7 @@ std::vector<long> extractEncodersPulses(const std::string& msg)
         double pulse = extractPulseCount(token);
         pulses_set.push_back(pulse); 
     }
+    return pulses_set;
 }
 
 bool isEncoderMsg(const std::string& msg) 
