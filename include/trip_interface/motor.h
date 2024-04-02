@@ -8,7 +8,7 @@
 #include <cmath>
 
 #define RADPS_TO_RPM (30.0 / M_PI)
-#define DEGPS_TO_RPM (1.0/5.0)
+#define DEGPS_TO_RPM (1.0/6.0)
 
 typedef enum ctrl_mode_t {VELOCITY, TORQUE} ctrl_mode_t;
 typedef enum vel_unit_t {RADPS, RPM, DEGPS} vel_unit_t;
