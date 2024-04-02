@@ -47,7 +47,7 @@ double Encoder::getVelocityRPM() const
     return vel_rpm_;
 }
 
-int Encoder::getPPR() const
+double Encoder::getPPR() const
 {
     return ppr_;
 }

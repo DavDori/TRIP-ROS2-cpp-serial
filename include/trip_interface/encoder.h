@@ -27,7 +27,7 @@ public:
     double getRadiants() const;
     double getDegrees() const;
     double getVelocityRPM()const;
-    int getPPR() const;
+    double getPPR() const;
 };
 
 #endif
