@@ -3,7 +3,7 @@ name: 'build and test package'
 on:
     push:
         branches: 
-            - stable
+            - action_test
     pull_request:
         branches: 
             - stable
@@ -12,7 +12,10 @@ jobs:
   build-test-pkg:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: https://github.com/RoverRobotics-forks/serial-ros2
       - uses: 'ros-industrial/industrial_ci@master'
         env: 
           ROS_DISTRO: humble
