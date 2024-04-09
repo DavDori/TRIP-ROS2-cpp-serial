@@ -3,7 +3,7 @@ name: 'build and test package'
 on:
     push:
         branches: 
-            - action_test
+            - feature/CI_action
     pull_request:
         branches: 
             - stable
